@@ -1,84 +1,36 @@
-# SwiggyUI
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-SwiggyUI App is a UI clone of a famous food ordering app called [Swiggy](https://play.google.com/store/apps/details?id=in.swiggy.android) built using Flutter. Show some ❤️ and star ⭐ the repo if you liked it, it makes me to share more open source flutter projects.
+## Getting Started
 
-![Github Followers](https://img.shields.io/github/followers/vinothvino42?label=Follow&style=social)
-![GitHub stars](https://img.shields.io/github/stars/vinothvino42/SwiggyUI?style=social)
-![GitHub forks](https://img.shields.io/github/forks/vinothvino42/SwiggyUI?style=social)
-![GitHub watchers](https://img.shields.io/github/watchers/vinothvino42/SwiggyUI?style=social)
-![Twitter Follow](https://img.shields.io/twitter/follow/vinothvino42?label=Follow&style=social)
+First, run the development server:
 
-<a href="https://www.buymeacoffee.com/vinothvino42" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-<a href="https://www.linkedin.com/in/vinothvino42/">
-    <img src="https://img.shields.io/badge/Support-Recommend%2FEndorse%20me%20on%20Linkedin-blue?style=for-the-badge&logo=linkedin" alt="Support me on LinkedIn" /></a>
-    
-Mobile - [Download APK](https://drive.google.com/drive/folders/1F9EONv5y_Y9xetBeXSqMBjH9eilglb8v?usp=sharing)  
-Web - https://swiggyuiclone.web.app  
-App Flow - https://youtu.be/qB_p8MSlpuQ  
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Screenshots
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-### Web UI
-![](screenshots/swiggy_web_ui.png)
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-### Tablet UI
-![](screenshots/swiggy_tablet_ui.png)
+## Learn More
 
-### Mobile UI
+To learn more about Next.js, take a look at the following resources:
 
-- Initial Views
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-Screen 1               |  Screen 2                       | Screen 3                            |  Screen 4 
-:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
-![](screenshots/swiggy1.jpg)|![](screenshots/swiggy2.jpg)|![](screenshots/swiggy3.jpg)|![](screenshots/swiggy4.jpg)|
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-Screen 5               |  Screen 6                       | Screen 7                            |  Screen 8 
-:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
-![](screenshots/swiggy5.jpg)|![](screenshots/swiggy6.jpg)|![](screenshots/swiggy7.jpg)|![](screenshots/swiggy8.jpg)|
+## Deploy on Vercel
 
-Screen 9               |  Screen 10                       | Screen 11                            |  Screen 12 
-:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
-![](screenshots/genie.jpg)|![](screenshots/grocery.jpg)|![](screenshots/meat.jpg)|![](screenshots/indian-food.jpg)|
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-- All Restaurant Views
-
-Screen 1               |  Screen 2                       | Screen 3                             |  Screen 4                    
-:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
-![](screenshots/all-restaurant1.jpg)|![](screenshots/all-restaurant2.jpg)|![](screenshots/all-restaurant3.jpg)|![](screenshots/all-restaurant4.jpg)|
-
-- Offer Views
-
-Screen 1               |  Screen 2                                 
-:-------------------------:|:-------------------------:
-![](screenshots/offers1.jpg)|![](screenshots/offers2.jpg)|
-
-- Restaurant Detail Views
-
-Screen 1               |  Screen 2                                 
-:-------------------------:|:-------------------------:
-![](screenshots/restaurant-detail1.jpg)|![](screenshots/restaurant-detail2.jpg)|
-
-### Search
-
-Screen 1                                  
-:-------------------------:
-![](screenshots/search.jpg)|
-
-### Cart
-
-Screen 1               |  Screen 2                                 
-:-------------------------:|:-------------------------:
-![](screenshots/cart1.jpg)|![](screenshots/cart2.jpg)|
-
-### Account
-
-Screen 1               |  Screen 2                                 
-:-------------------------:|:-------------------------:
-![](screenshots/account1.jpg)|![](screenshots/account2.jpg)|
-
-
-<p align="justify">
-  Made With Flutter 💙
-</p>
-
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
