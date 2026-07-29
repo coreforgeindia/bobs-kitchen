@@ -1,0 +1,20 @@
+# Node & Web Dependencies
+node_modules/
+**/node_modules/
+
+# Next.js build outputs
+.next/
+**/.next/
+out/
+build/
+
+# Logs & Environment
+*.log
+.env*
+.DS_Store
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+
