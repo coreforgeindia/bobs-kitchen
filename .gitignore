@@ -12,4 +12,7 @@ __v0_jsx-dev-runtime.ts
 # Common ignores
 node_modules
 .next/
+out/
+.open-next/
+.dev.vars
 .DS_Store
