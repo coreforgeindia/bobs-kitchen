@@ -1,0 +1,660 @@
+export type MenuItem = {
+  id: string
+  name: string
+  category: string
+  price: number
+  originalPrice?: number
+  description: string
+  image: string
+  veg: boolean
+  containsEgg?: boolean
+  rating: number
+  reviewCount?: number
+  calories: number
+  time: string
+  bestseller?: boolean
+  available?: boolean
+  specialOfferBadge?: string
+}
+
+export const restaurantStats = {
+  name: "Bob's Satellite Kitchen",
+  cuisines: 'Fusion Snack Packs, Gourmet Burgers, Kathi Rolls, Peri Peri Fries, Desserts',
+  address: '1067, 8th Main Rd, Kaveri Layout, Marathahalli Village, Marathahalli, Bengaluru, Karnataka 560037',
+  area: 'Marathahalli Village, Bengaluru',
+  timing: 'Open now · 9:00 AM – 12:30 AM (Daily)',
+  phone: '9550764604',
+  formattedPhone: '+91 95507 64604',
+  instagram: 'https://www.instagram.com/bobs_satellite_kitchen?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==&igsi=ZDNlZDc0MzIxNw==',
+  mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.2860005195657!2d77.69335637484109!3d12.953542087360153!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae13aa9b75ca81%3A0x93c183b2cb1a5db3!2sBob%E2%80%99s%20Satellite%20Kitchen!5e0!3m2!1sen!2sin!4v1787136176658!5m2!1sen!2sin',
+  upiId: '9550764604@upi',
+  upiName: "Bob's Satellite Kitchen",
+  diningRating: 4.8,
+  diningVotes: '5,141',
+  deliveryRating: 4.7,
+  deliveryVotes: '5,569',
+}
+
+// Curated reliable high-resolution food images from Unsplash & local assets
+const images = {
+  paneerSnackPack: 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&w=800&q=80',
+  chickenSnackPack: 'https://images.unsplash.com/photo-1626074353765-517a681e40be?auto=format&fit=crop&w=800&q=80',
+  chickenJalfreziSnackPack: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=800&q=80',
+  vegBurger: '/veg-burger.png',
+  chickenBurger: '/chicken-burger.png',
+  crunchyPaneerRoll: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80',
+  tawaChickenRoll: 'https://images.unsplash.com/photo-1509722747041-616f39b57569?auto=format&fit=crop&w=800&q=80',
+  chickenJalfreziRoll: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80',
+  periPeriFries: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=800&q=80',
+  plainFries: 'https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?auto=format&fit=crop&w=800&q=80',
+  vegNuggets: 'https://images.unsplash.com/photo-1562967916-eb82221dfb92?auto=format&fit=crop&w=800&q=80',
+  chickenNuggets: 'https://images.unsplash.com/photo-1562967916-eb82221dfb92?auto=format&fit=crop&w=800&q=80',
+  smilies: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=800&q=80',
+  cheeseSandwich: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=800&q=80',
+  paneerSandwich: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=800&q=80',
+  chickenSandwich: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=800&q=80',
+  tiramisu: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=800&q=80',
+  brownieIceCream: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=800&q=80',
+  waterBottle: 'https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&w=800&q=80',
+  coldDrink: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=800&q=80',
+  sprite: 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?auto=format&fit=crop&w=800&q=80',
+  orangeSoda: 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?auto=format&fit=crop&w=800&q=80',
+  pepsi: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80',
+}
+
+export const menuItems: MenuItem[] = [
+  // FUSION SNACK PACK (OUR SIGNATURE)
+  {
+    id: 'paneer-tikka-snack-pack',
+    name: 'Paneer Tikka Snack Pack',
+    category: 'Fusion Snack Pack',
+    price: 120,
+    description: 'Crispy cottage cheese paneer tikka cubes served with signature dipping sauce & golden fries.',
+    image: images.paneerSnackPack,
+    veg: true,
+    rating: 4.8,
+    reviewCount: 482,
+    calories: 480,
+    time: '12 min',
+    bestseller: true,
+    specialOfferBadge: 'OUR SIGNATURE',
+  },
+  {
+    id: 'chicken-tikka-snack-pack',
+    name: 'Chicken Tikka Snack Pack',
+    category: 'Fusion Snack Pack',
+    price: 120,
+    description: 'Smoky grilled chicken tikka bites, seasoned crispy fries, and house spicy mayo dip.',
+    image: images.chickenSnackPack,
+    veg: false,
+    rating: 4.9,
+    reviewCount: 654,
+    calories: 590,
+    time: '15 min',
+    bestseller: true,
+    specialOfferBadge: 'OUR SIGNATURE',
+  },
+  {
+    id: 'chicken-jalfrezi-snack-pack',
+    name: 'Chicken Jalfrezi Snack Pack (Wedges)',
+    category: 'Fusion Snack Pack',
+    price: 130,
+    description: 'Spiced chicken jalfrezi tossed with crunchy bell peppers, crispy potato wedges, and mint dip.',
+    image: images.chickenJalfreziSnackPack,
+    veg: false,
+    rating: 4.8,
+    reviewCount: 390,
+    calories: 610,
+    time: '15 min',
+    bestseller: true,
+    specialOfferBadge: 'CHEF SPECIAL',
+  },
+
+  // ROLLS
+  {
+    id: 'crunchy-paneer-roll',
+    name: 'Crunchy Paneer Roll',
+    category: 'Rolls',
+    price: 110,
+    description: 'Crispy seasoned paneer cubes, crunchy fresh slaw, and smoky house sauce rolled in a warm paratha wrap.',
+    image: images.crunchyPaneerRoll,
+    veg: true,
+    rating: 4.7,
+    reviewCount: 345,
+    calories: 390,
+    time: '12 min',
+    bestseller: true,
+  },
+  {
+    id: 'tawa-grilled-chicken-roll',
+    name: 'Tawa Grilled Chicken Roll',
+    category: 'Rolls',
+    price: 110,
+    description: 'Tawa-seared tender chicken strips, sauteed onions, and herbs rolled with a creamy tangy sauce.',
+    image: images.tawaChickenRoll,
+    veg: false,
+    rating: 4.8,
+    reviewCount: 420,
+    calories: 440,
+    time: '14 min',
+    bestseller: true,
+  },
+  {
+    id: 'chicken-jalfrezi-roll',
+    name: 'Chicken Jalfrezi Roll',
+    category: 'Rolls',
+    price: 110,
+    description: 'Spiced jalfrezi chicken, sweet peppers, and red onions rolled in a hot grilled wrap.',
+    image: images.chickenJalfreziRoll,
+    veg: false,
+    rating: 4.7,
+    reviewCount: 290,
+    calories: 450,
+    time: '14 min',
+  },
+
+  // BURGERS
+  {
+    id: 'veg-burger',
+    name: 'Veg Burger',
+    category: 'Burgers',
+    price: 89,
+    description: 'Crispy spiced golden vegetable patty topped with fresh lettuce, juicy tomato, and signature secret burger sauce.',
+    image: images.vegBurger,
+    veg: true,
+    rating: 4.8,
+    reviewCount: 780,
+    calories: 380,
+    time: '10 min',
+    bestseller: true,
+  },
+  {
+    id: 'chicken-burger',
+    name: 'Chicken Burger',
+    category: 'Burgers',
+    price: 99,
+    description: 'Juicy flame-grilled chicken patty, creamy herb mayo, melted cheese slice, and crisp lettuce on toasted bun.',
+    image: images.chickenBurger,
+    veg: false,
+    rating: 4.9,
+    reviewCount: 1040,
+    calories: 460,
+    time: '12 min',
+    bestseller: true,
+  },
+
+  // FRIES & SIDES
+  {
+    id: 'peri-peri-french-fries',
+    name: 'Peri Peri French Fries',
+    category: 'Fries & Sides',
+    price: 69,
+    description: 'Crispy golden potato fries tossed in our signature bold, smoky 12-spice African peri peri dust.',
+    image: images.periPeriFries,
+    veg: true,
+    rating: 4.9,
+    reviewCount: 1350,
+    calories: 290,
+    time: '8 min',
+    bestseller: true,
+  },
+  {
+    id: 'plain-french-fries',
+    name: 'Plain French Fries',
+    category: 'Fries & Sides',
+    price: 59,
+    description: 'Classic golden salted fries cooked extra crisp and served hot.',
+    image: images.plainFries,
+    veg: true,
+    rating: 4.6,
+    reviewCount: 480,
+    calories: 260,
+    time: '8 min',
+  },
+  {
+    id: 'veg-nuggets',
+    name: 'Veg Nuggets',
+    category: 'Fries & Sides',
+    price: 59,
+    description: 'Crispy golden vegetable bites packed with potatoes and corn, served with tomato dip.',
+    image: images.vegNuggets,
+    veg: true,
+    rating: 4.6,
+    reviewCount: 260,
+    calories: 280,
+    time: '8 min',
+  },
+  {
+    id: 'peri-peri-veg-nuggets',
+    name: 'Peri Peri Veg Nuggets',
+    category: 'Fries & Sides',
+    price: 69,
+    description: 'Crunchy golden veg nuggets dusted with spicy and tangy peri peri spice mix.',
+    image: images.vegNuggets,
+    veg: true,
+    rating: 4.7,
+    reviewCount: 230,
+    calories: 290,
+    time: '8 min',
+  },
+  {
+    id: 'chicken-nuggets',
+    name: 'Chicken Nuggets',
+    category: 'Fries & Sides',
+    price: 79,
+    description: 'Tender chicken bites encased in a crispy breadcrumb coating with house mayo.',
+    image: images.chickenNuggets,
+    veg: false,
+    rating: 4.8,
+    reviewCount: 490,
+    calories: 340,
+    time: '10 min',
+    bestseller: true,
+  },
+  {
+    id: 'peri-peri-chicken-nuggets',
+    name: 'Peri Peri Chicken Nuggets',
+    category: 'Fries & Sides',
+    price: 89,
+    description: 'Crispy fried chicken nuggets seasoned with hot peri peri powder.',
+    image: images.chickenNuggets,
+    veg: false,
+    rating: 4.9,
+    reviewCount: 570,
+    calories: 360,
+    time: '10 min',
+    bestseller: true,
+  },
+  {
+    id: 'plain-smilies',
+    name: 'Plain Smilies',
+    category: 'Fries & Sides',
+    price: 69,
+    description: 'Fun, crispy potato smilies, lightly salted and fried golden brown.',
+    image: images.smilies,
+    veg: true,
+    rating: 4.7,
+    reviewCount: 210,
+    calories: 270,
+    time: '8 min',
+  },
+  {
+    id: 'peri-peri-smilies',
+    name: 'Peri Peri Smilies',
+    category: 'Fries & Sides',
+    price: 69,
+    description: 'Crispy potato smileys dusted with signature hot peri peri seasoning.',
+    image: images.smilies,
+    veg: true,
+    rating: 4.8,
+    reviewCount: 280,
+    calories: 280,
+    time: '8 min',
+  },
+
+  // SANDWICHES
+  {
+    id: 'cheese-sandwich',
+    name: 'Cheese Sandwich',
+    category: 'Sandwiches',
+    price: 79,
+    description: 'Toasted bread loaded with molten cheddar and mozzarella blend and herbal butter.',
+    image: images.cheeseSandwich,
+    veg: true,
+    rating: 4.6,
+    reviewCount: 340,
+    calories: 320,
+    time: '10 min',
+  },
+  {
+    id: 'paneer-tikka-sandwich',
+    name: 'Paneer Tikka Sandwich',
+    category: 'Sandwiches',
+    price: 80,
+    description: 'Spiced paneer tikka, crisp onions, and mint mayo grilled to perfection.',
+    image: images.paneerSandwich,
+    veg: true,
+    rating: 4.8,
+    reviewCount: 460,
+    calories: 370,
+    time: '10 min',
+    bestseller: true,
+  },
+  {
+    id: 'chicken-tikka-sandwich',
+    name: 'Chicken Tikka Sandwich',
+    category: 'Sandwiches',
+    price: 80,
+    description: 'Smoky chicken tikka cubes, crunchy capsicum, and tangy herb spread in toasted bread.',
+    image: images.chickenSandwich,
+    veg: false,
+    rating: 4.8,
+    reviewCount: 520,
+    calories: 410,
+    time: '10 min',
+    bestseller: true,
+  },
+  {
+    id: 'chicken-jalfrezi-sandwich',
+    name: 'Chicken Jalfrezi Sandwich',
+    category: 'Sandwiches',
+    price: 80,
+    description: 'Tangy and spiced chicken jalfrezi tossed with peppers in a crispy grilled sandwich.',
+    image: images.chickenSandwich,
+    veg: false,
+    rating: 4.7,
+    reviewCount: 380,
+    calories: 420,
+    time: '10 min',
+  },
+
+  // DESSERTS (Contains Egg indicator)
+  {
+    id: 'tiramisu-cup',
+    name: 'Tiramisu Cup',
+    category: 'Desserts',
+    price: 150,
+    description: 'Silky mascarpone cream layered with espresso-soaked ladyfingers and dusted with rich Dutch cocoa.',
+    image: images.tiramisu,
+    veg: false,
+    containsEgg: true,
+    rating: 4.9,
+    reviewCount: 610,
+    calories: 310,
+    time: '5 min',
+    bestseller: true,
+  },
+  {
+    id: 'brownie-with-ice-cream',
+    name: 'Brownie with Ice Cream',
+    category: 'Desserts',
+    price: 120,
+    description: 'Warm, gooey chocolate fudge brownie topped with a chilled scoop of vanilla ice cream and chocolate drizzle.',
+    image: images.brownieIceCream,
+    veg: false,
+    containsEgg: true,
+    rating: 4.9,
+    reviewCount: 780,
+    calories: 420,
+    time: '5 min',
+    bestseller: true,
+  },
+
+  // BEVERAGES
+  {
+    id: 'water-500ml',
+    name: 'Water Bottle – 500 ml',
+    category: 'Beverages',
+    price: 10,
+    description: 'Pure packaged mineral water 500 ml chilled.',
+    image: images.waterBottle,
+    veg: true,
+    rating: 4.5,
+    reviewCount: 150,
+    calories: 0,
+    time: '1 min',
+  },
+  {
+    id: 'water-1l',
+    name: 'Water Bottle – 1 L',
+    category: 'Beverages',
+    price: 20,
+    description: 'Pure packaged mineral water 1 Litre chilled.',
+    image: images.waterBottle,
+    veg: true,
+    rating: 4.5,
+    reviewCount: 220,
+    calories: 0,
+    time: '1 min',
+  },
+  {
+    id: 'thums-up',
+    name: 'Thums Up',
+    category: 'Beverages',
+    price: 20,
+    description: 'Charged ice-cold Thums Up can/bottle (250ml).',
+    image: images.coldDrink,
+    veg: true,
+    rating: 4.8,
+    reviewCount: 920,
+    calories: 120,
+    time: '1 min',
+  },
+  {
+    id: 'sprite',
+    name: 'Sprite',
+    category: 'Beverages',
+    price: 20,
+    description: 'Crisp refreshing lemon-lime Sprite soda.',
+    image: images.sprite,
+    veg: true,
+    rating: 4.7,
+    reviewCount: 490,
+    calories: 110,
+    time: '1 min',
+  },
+  {
+    id: 'mirinda',
+    name: 'Mirinda',
+    category: 'Beverages',
+    price: 20,
+    description: 'Sweet fizzy orange fruit flavored soda.',
+    image: images.orangeSoda,
+    veg: true,
+    rating: 4.6,
+    reviewCount: 310,
+    calories: 130,
+    time: '1 min',
+  },
+  {
+    id: 'coca-cola',
+    name: 'Coca-Cola',
+    category: 'Beverages',
+    price: 20,
+    description: 'Classic ice-cold fizzy Coca-Cola.',
+    image: images.coldDrink,
+    veg: true,
+    rating: 4.8,
+    reviewCount: 880,
+    calories: 120,
+    time: '1 min',
+  },
+  {
+    id: 'pepsi',
+    name: 'Pepsi',
+    category: 'Beverages',
+    price: 20,
+    description: 'Chilled bold Pepsi cola refreshment.',
+    image: images.pepsi,
+    veg: true,
+    rating: 4.7,
+    reviewCount: 430,
+    calories: 120,
+    time: '1 min',
+  },
+  {
+    id: 'fanta',
+    name: 'Fanta',
+    category: 'Beverages',
+    price: 20,
+    description: 'Bright bubbly orange soda refreshment.',
+    image: images.orangeSoda,
+    veg: true,
+    rating: 4.6,
+    reviewCount: 260,
+    calories: 130,
+    time: '1 min',
+  },
+]
+
+export const categories = ['All', 'Fusion Snack Pack', 'Rolls', 'Burgers', 'Fries & Sides', 'Sandwiches', 'Desserts', 'Beverages']
+
+export type CategoryItem = {
+  id: string
+  name: string
+  image: string
+  itemCount: number
+  priceStart: number
+}
+
+export const menuCategories: CategoryItem[] = [
+  {
+    id: 'Fusion Snack Pack',
+    name: 'Fusion Snack Pack',
+    image: images.paneerSnackPack,
+    itemCount: 3,
+    priceStart: 120,
+  },
+  {
+    id: 'Rolls',
+    name: 'Rolls',
+    image: images.crunchyPaneerRoll,
+    itemCount: 3,
+    priceStart: 110,
+  },
+  {
+    id: 'Burgers',
+    name: 'Burgers',
+    image: images.vegBurger,
+    itemCount: 2,
+    priceStart: 89,
+  },
+  {
+    id: 'Fries & Sides',
+    name: 'Fries & Sides',
+    image: images.periPeriFries,
+    itemCount: 8,
+    priceStart: 59,
+  },
+  {
+    id: 'Sandwiches',
+    name: 'Sandwiches',
+    image: images.paneerSandwich,
+    itemCount: 4,
+    priceStart: 79,
+  },
+  {
+    id: 'Desserts',
+    name: 'Desserts',
+    image: images.tiramisu,
+    itemCount: 2,
+    priceStart: 120,
+  },
+  {
+    id: 'Beverages',
+    name: 'Beverages',
+    image: images.coldDrink,
+    itemCount: 8,
+    priceStart: 10,
+  },
+]
+
+export const galleryImages = [images.vegBurger, images.periPeriFries, images.crunchyPaneerRoll, images.paneerSandwich, images.tiramisu, images.chickenBurger]
+export const formatPrice = (value: number) => `₹${value.toLocaleString('en-IN')}`
+
+// Cafe Coins - Launch Offer (50% Cashback) Matrix
+export type CafeCoinOffer = {
+  spendMin: number
+  coins: number
+  usableAbove: number
+  badge: string
+}
+
+export const cafeCoinOffers: CafeCoinOffer[] = [
+  { spendMin: 200, coins: 100, usableAbove: 500, badge: '50% Cashback' },
+  { spendMin: 300, coins: 150, usableAbove: 500, badge: '50% Cashback' },
+  { spendMin: 500, coins: 250, usableAbove: 700, badge: '50% Cashback' },
+  { spendMin: 700, coins: 350, usableAbove: 900, badge: '50% Cashback' },
+  { spendMin: 999, coins: 500, usableAbove: 1200, badge: 'Max ₹500 Cashback' },
+]
+
+export const calculateCoinsEarned = (orderSubtotal: number): { coins: number; nextUsableAbove: number } => {
+  const eligible = [...cafeCoinOffers].reverse().find((o) => orderSubtotal >= o.spendMin)
+  if (eligible) {
+    return { coins: eligible.coins, nextUsableAbove: eligible.usableAbove }
+  }
+  return { coins: 0, nextUsableAbove: 0 }
+}
+
+export const specialOffers = [
+  {
+    id: 'coin-launch',
+    code: 'CAFE50',
+    title: 'Cafe Coins 50% Cashback Launch Offer',
+    desc: 'Get up to ₹500 Cafe Coins credited instantly based on your order spend value!',
+    badge: 'Launch Special',
+    bg: 'from-amber-500/15 via-orange-500/10 to-transparent',
+    border: 'border-amber-500/40',
+  },
+  {
+    id: 'offer-1',
+    code: 'MARATHAHALLI',
+    title: 'Free Express Delivery in Marathahalli',
+    desc: 'Get 100% Free Express Delivery within 3 km radius on orders above ₹300.',
+    badge: '3km Radius Deal',
+    bg: 'from-emerald-500/15 via-teal-500/10 to-transparent',
+    border: 'border-emerald-500/40',
+  },
+  {
+    id: 'offer-2',
+    code: 'BOB20',
+    title: 'Flat 20% Instant Discount',
+    desc: 'Apply coupon BOB20 on any order above ₹250 to get flat 20% discount instantly.',
+    badge: 'Feast Deal',
+    bg: 'from-orange-500/15 via-amber-500/10 to-transparent',
+    border: 'border-orange-500/40',
+  },
+]
+
+export const customerReviews = [
+  {
+    id: 'r1',
+    name: 'Aarav Sharma',
+    location: 'Kaveri Layout, Marathahalli',
+    rating: 5,
+    comment: "The Paneer Tikka Snack Pack at ₹120 and Veg Burger at ₹89 are pure gold! Delivered in 18 minutes hot and fresh in Marathahalli.",
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
+    dish: 'Ordered: Paneer Tikka Snack Pack + Peri Peri Fries',
+  },
+  {
+    id: 'r2',
+    name: 'Priya Nair',
+    location: 'Marathahalli Village',
+    rating: 5,
+    comment: "UPI payment with QR was super smooth. The Tiramisu Cup (₹150) and Chicken Burger (₹99) taste like high-end cafe quality!",
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80',
+    dish: 'Ordered: Chicken Burger + Tiramisu Cup',
+  },
+  {
+    id: 'r3',
+    name: 'Rohan Mehta',
+    location: 'Outer Ring Rd, Marathahalli',
+    rating: 5,
+    comment: "Best Kathi Rolls in Bengaluru! Tawa Grilled Chicken Roll (₹110) with Thums Up is my daily fix. Love the Cafe Coins cashback too!",
+    avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=200&q=80',
+    dish: 'Ordered: Tawa Grilled Chicken Roll + Thums Up',
+  },
+]
+
+export const faqItems = [
+  {
+    question: 'What is your delivery coverage and minimum distance radius?',
+    answer: 'We only deliver within Marathahalli within a strict 3 km radius from our outlet at Kaveri Layout, Marathahalli (560037). If you are outside 3 km, we provide convenient Self Takeaway / Pickup!',
+  },
+  {
+    question: 'How do I pay via UPI QR and enter transaction ID?',
+    answer: 'At checkout, select UPI payment to view our official QR code (or pay to 9550764604@upi). Complete payment in your UPI app (GPay / PhonePe / Paytm), enter the last 5 digits of your UPI Transaction ID / UTR, and tap Place Order.',
+  },
+  {
+    question: 'How does the Cafe Coins Launch Offer work?',
+    answer: 'You earn 50% cashback in Cafe Coins on eligible order spend: Spend ₹200 get ₹100 coins, Spend ₹300 get ₹150 coins, Spend ₹500 get ₹250 coins, Spend ₹700 get ₹350 coins, and Spend ₹999+ get ₹500 coins. Coins can be used on future orders!',
+  },
+  {
+    question: 'Do I need to enter my account details every time?',
+    answer: 'No! If you create or sign in to your account from the top navbar, your details (Name, Phone, Email, Delivery Address) are automatically saved and fetched at checkout. For Takeaway without an account, you only need to enter your Phone number.',
+  },
+  {
+    question: 'What do the Veg, Non-Veg, and Egg indicators signify?',
+    answer: 'Green dot indicates 100% Pure Vegetarian, Red dot indicates Non-Vegetarian (halal fresh chicken), and Red triangle indicates Contains Egg (like Tiramisu & Brownie).',
+  },
+]
