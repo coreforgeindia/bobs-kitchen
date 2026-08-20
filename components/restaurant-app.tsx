@@ -24,7 +24,16 @@ const UserMapPicker = dynamic(() => import('./user-map-picker').then((m) => m.Us
   ssr: false,
   loading: () => (
     <div className="flex h-64 w-full items-center justify-center rounded-3xl border border-border bg-secondary/30 text-xs font-bold text-muted-foreground animate-pulse font-outfit">
-      Loading Delivery Zone Map... 📍
+      Loading Delivery Zone Map...
+    </div>
+  ),
+})
+
+const LiveRoadTracker = dynamic(() => import('./live-road-tracker').then((m) => m.LiveRoadTracker), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-64 w-full items-center justify-center rounded-2xl border-2 border-orange-200 bg-orange-50/50 text-xs font-bold text-orange-600 animate-pulse font-outfit">
+      Loading Live Road Route Map...
     </div>
   ),
 })
@@ -538,52 +547,52 @@ function OrderTrackingModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 font-sans">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 15 }} 
         animate={{ opacity: 1, scale: 1, y: 0 }} 
         exit={{ opacity: 0, scale: 0.95, y: 15 }} 
-        className="relative z-10 w-full max-w-lg overflow-hidden rounded-3xl border border-zinc-700 bg-zinc-900 text-white font-outfit shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto p-5 sm:p-6"
+        className="relative z-10 w-full max-w-lg overflow-hidden rounded-3xl border-2 border-orange-200 bg-white text-slate-900 font-outfit shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto p-5 sm:p-6"
       >
-        <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2.5 py-0.5 text-[10px] font-black uppercase">
-                Live Tracker
+              <span className="rounded-full bg-orange-500/10 text-orange-600 border border-orange-500/30 px-2.5 py-0.5 text-[10px] font-black uppercase">
+                Live Road Tracker
               </span>
-              <span className="text-xs text-zinc-400 font-mono">#{order.id}</span>
+              <span className="text-xs text-slate-500 font-mono font-bold">#{order.id}</span>
             </div>
-            <h3 className="text-lg sm:text-xl font-black mt-0.5 text-white">Tracking Your Order</h3>
+            <h3 className="text-lg sm:text-xl font-black mt-0.5 text-slate-900">Tracking Your Order</h3>
           </div>
-          <button onClick={onClose} className="rounded-full p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white cursor-pointer">
+          <button onClick={onClose} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-900 cursor-pointer transition-all">
             <X size={18} />
           </button>
         </div>
 
         {/* Live Stepper */}
-        <div className="rounded-2xl bg-zinc-950/80 p-4 border border-zinc-800 space-y-4">
-          <div className="flex items-center justify-between text-xs font-bold text-zinc-400">
-            <span>Estimated Arrival: <strong className="text-orange-400 font-extrabold">{order.estimatedDeliveryMins || 20} mins</strong></span>
-            <span className="text-emerald-400 font-bold">{order.status}</span>
+        <div className="rounded-2xl bg-orange-50/60 p-4 border border-orange-200/80 space-y-3.5">
+          <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+            <span>Estimated Arrival: <strong className="text-orange-600 font-extrabold">{order.estimatedDeliveryMins || 20} mins</strong></span>
+            <span className="rounded-full bg-emerald-100 text-emerald-800 px-2.5 py-0.5 text-[10px] font-black">{order.status}</span>
           </div>
 
-          <div className="relative space-y-4 pl-6 border-l-2 border-orange-500/30 ml-2">
+          <div className="relative space-y-3 pl-6 border-l-2 border-orange-400 ml-2">
             {steps.map((st, idx) => {
               const isPassed = idx <= currentStepIdx
               const isCurrent = idx === currentStepIdx
               return (
                 <div key={idx} className="relative">
                   <div className={`absolute -left-[31px] top-0 flex size-5 items-center justify-center rounded-full text-[10px] font-black ${
-                    isPassed ? 'bg-orange-500 text-white ring-4 ring-orange-500/20' : 'bg-zinc-800 text-zinc-500'
+                    isPassed ? 'bg-orange-500 text-white ring-4 ring-orange-500/20' : 'bg-slate-200 text-slate-500'
                   }`}>
                     {isPassed ? '✓' : idx + 1}
                   </div>
                   <div>
-                    <p className={`text-xs font-bold ${isCurrent ? 'text-orange-400 text-sm' : isPassed ? 'text-white' : 'text-zinc-500'}`}>
+                    <p className={`text-xs font-bold ${isCurrent ? 'text-orange-600 text-sm font-black' : isPassed ? 'text-slate-900' : 'text-slate-400'}`}>
                       {st.title} {isCurrent && '⚡'}
                     </p>
-                    <p className="text-[11px] text-zinc-400">{st.desc}</p>
+                    <p className="text-[11px] text-slate-500">{st.desc}</p>
                   </div>
                 </div>
               )
@@ -591,63 +600,69 @@ function OrderTrackingModal({
           </div>
         </div>
 
+        {/* EMBEDDED HIGH-CONTRAST ROAD TRACKER MAP */}
+        <div className="space-y-1.5">
+          <LiveRoadTracker 
+            destLat={order.lat || 12.9582} 
+            destLng={order.lng || 77.6990} 
+            mode={order.mode} 
+            deliveryAddress={order.deliveryAddress} 
+            status={order.status}
+            estimatedMins={order.estimatedDeliveryMins || 15}
+          />
+        </div>
+
         {/* Order Details & Payment Metadata */}
         <div className="space-y-2 text-xs">
-          <div className="rounded-2xl bg-zinc-800/60 p-3.5 space-y-2 border border-zinc-700/60">
-            <div className="flex justify-between items-center text-zinc-300">
-              <span className="font-bold">📍 Fulfillment Mode:</span>
-              <span className="text-orange-400 font-extrabold">{order.mode}</span>
+          <div className="rounded-2xl bg-slate-50 p-3.5 space-y-2 border border-slate-200/80">
+            <div className="flex justify-between items-center text-slate-700">
+              <span className="font-bold flex items-center gap-1"><Package size={13} className="text-orange-500" /> Fulfillment Mode:</span>
+              <span className="text-orange-600 font-extrabold">{order.mode}</span>
             </div>
-            <div className="flex justify-between items-start text-zinc-300">
-              <span className="font-bold shrink-0">🗺️ Address:</span>
-              <span className="text-right text-zinc-200 text-[11px] max-w-[260px] truncate">{order.deliveryAddress}</span>
+            <div className="flex justify-between items-start text-slate-700">
+              <span className="font-bold shrink-0 flex items-center gap-1"><MapPin size={13} className="text-orange-500" /> Destination:</span>
+              <span className="text-right text-slate-800 text-[11px] max-w-[260px] truncate">{order.deliveryAddress}</span>
             </div>
-            <div className="flex justify-between items-center text-zinc-300">
-              <span className="font-bold">💳 Payment:</span>
-              <span className="text-white font-extrabold">{order.paymentMethod || 'UPI Instant'}</span>
+            <div className="flex justify-between items-center text-slate-700">
+              <span className="font-bold flex items-center gap-1"><CreditCard size={13} className="text-orange-500" /> Payment:</span>
+              <span className="text-slate-900 font-extrabold">{order.paymentMethod || 'UPI Instant'}</span>
             </div>
             {order.transactionId && (
-              <div className="flex justify-between items-center text-zinc-300">
-                <span className="font-bold">🔖 UPI Ref / Txn ID:</span>
-                <span className="font-mono text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
+              <div className="flex justify-between items-center text-slate-700">
+                <span className="font-bold flex items-center gap-1"><ShieldCheck size={13} className="text-emerald-500" /> UPI Ref / Txn ID:</span>
+                <span className="font-mono text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                   #{order.transactionId}
                 </span>
               </div>
             )}
-            {order.coinsEarned > 0 && (
-              <div className="flex justify-between items-center text-amber-400 font-bold">
-                <span>🪙 Cafe Coins Cashback:</span>
-                <span>+{order.coinsEarned} Coins</span>
-              </div>
-            )}
           </div>
 
-          <div className="rounded-2xl bg-zinc-800/60 p-3.5 space-y-1.5 border border-zinc-700/60">
-            <p className="font-bold text-zinc-400 text-[10px] uppercase">Dishes in Order</p>
+          <div className="rounded-2xl bg-slate-50 p-3.5 space-y-1.5 border border-slate-200/80">
+            <p className="font-bold text-slate-400 text-[10px] uppercase">Dishes in Order</p>
             {order.items.map((it) => (
-              <div key={it.id} className="flex justify-between text-zinc-200">
+              <div key={it.id} className="flex justify-between text-slate-700">
                 <span>{it.quantity}x {it.name}</span>
-                <span className="font-bold text-white">{formatPrice(it.price * it.quantity)}</span>
+                <span className="font-bold text-slate-900">{formatPrice(it.price * it.quantity)}</span>
               </div>
             ))}
-            <div className="pt-2 border-t border-zinc-700 flex justify-between font-bold text-white">
+            <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-slate-900">
               <span>Total Paid</span>
-              <span className="text-orange-400 text-sm">{formatPrice(order.total)}</span>
+              <span className="text-orange-600 text-sm font-black">{formatPrice(order.total)}</span>
             </div>
           </div>
         </div>
 
         {/* Contact Restaurant Button */}
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-2 pt-1">
           <a
             href={`tel:${restaurantStats.phone}`}
-            className="flex-1 rounded-2xl bg-zinc-800 py-3 text-xs font-bold text-center text-white hover:bg-zinc-700 transition-all flex items-center justify-center gap-1.5"
+            className="flex-1 rounded-2xl border border-slate-200 bg-slate-100 py-3 text-xs font-bold text-center text-slate-800 hover:bg-slate-200 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
-            <Phone size={14} /> Call Outlet ({restaurantStats.phone})
+            <Phone size={14} className="text-orange-500" /> Call Kitchen
           </a>
           <button
             onClick={onClose}
-            className="flex-1 rounded-2xl bg-orange-500 py-3 text-xs font-black text-center text-white hover:bg-orange-600 transition-all cursor-pointer"
+            className="flex-1 rounded-2xl bg-orange-500 py-3 text-xs font-black text-center text-white hover:bg-orange-600 transition-all cursor-pointer shadow-md"
           >
             Close Tracker
           </button>
@@ -761,18 +776,24 @@ function UserProfileDrawer({
 
         {user ? (
           <>
-            <div className="flex border-b border-border bg-secondary/30 overflow-x-auto no-scrollbar font-outfit text-[11px] sm:text-xs font-bold p-1">
+            <div className="flex border-b border-border bg-slate-50/80 overflow-x-auto no-scrollbar font-outfit text-[11px] sm:text-xs font-bold p-1 gap-1">
               {[
-                { id: 'orders', label: 'Order History', icon: Package },
+                { id: 'orders', label: 'Orders', icon: Package },
                 { id: 'tracking', label: 'Live Tracking', icon: Bike },
-                { id: 'addresses', label: 'My Address', icon: MapPin },
-                { id: 'wallet', label: 'Cafe Coins', icon: Wallet },
-                { id: 'settings', label: 'Account Details', icon: Settings },
+                { id: 'addresses', label: 'Addresses', icon: MapPin },
+                { id: 'wallet', label: 'Offers', icon: Tag },
+                { id: 'settings', label: 'Settings', icon: Settings },
               ].map((t) => {
                 const Icon = t.icon
                 const active = tab === t.id
                 return (
-                  <button key={t.id} onClick={() => setTab(t.id as any)} className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl transition-all whitespace-nowrap cursor-pointer ${active ? 'bg-orange-500 text-white font-extrabold shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'}`}>
+                  <button 
+                    key={t.id} 
+                    onClick={() => setTab(t.id as any)} 
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all whitespace-nowrap cursor-pointer shrink-0 ${
+                      active ? 'bg-orange-500 text-white font-extrabold shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                    }`}
+                  >
                     <Icon size={13} />
                     <span>{t.label}</span>
                   </button>
@@ -781,73 +802,108 @@ function UserProfileDrawer({
             </div>
 
             <div className="flex-1 overflow-y-auto p-3.5 sm:p-5 font-outfit">
-              {/* ORDERS TAB */}
+              {/* ORDERS TAB (HISTORY) */}
               {tab === 'orders' && (
                 <div className="space-y-3.5">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-outfit text-sm sm:text-base font-bold">Past & Active Orders</h4>
+                    <h4 className="font-outfit text-sm sm:text-base font-bold text-slate-900">Order History</h4>
                     <span className="text-[11px] text-muted-foreground">{orders.length} total</span>
                   </div>
 
                   {orders.length === 0 ? (
                     <div className="rounded-2xl border border-dashed border-border p-6 text-center">
                       <Package size={32} className="mx-auto text-muted-foreground opacity-50 mb-2" />
-                      <p className="font-outfit text-xs sm:text-sm font-bold">No orders placed yet</p>
+                      <p className="font-outfit text-xs sm:text-sm font-bold text-slate-700">No orders placed yet</p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">Explore our menu and place your first delicious dish!</p>
                     </div>
                   ) : (
-                    orders.map((o) => (
-                      <div key={o.id} className="rounded-2xl border border-border/80 bg-card p-3.5 shadow-xs space-y-2.5">
-                        <div className="flex items-start justify-between border-b pb-2">
-                          <div>
-                            <span className="font-outfit font-black text-xs sm:text-sm text-foreground">Order #{o.id}</span>
-                            <p className="text-[10px] text-muted-foreground">{new Date(o.createdAt).toLocaleDateString('en-IN')}</p>
-                          </div>
-                          <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-extrabold text-emerald-600">{o.status}</span>
-                        </div>
-                        <div className="space-y-1 text-xs">
-                          {o.items.map((i) => (
-                            <div key={i.id} className="flex justify-between text-muted-foreground">
-                              <span>{i.quantity} × {i.name}</span>
-                              <span className="font-semibold text-foreground">{formatPrice(i.price * i.quantity)}</span>
+                    orders.map((o) => {
+                      const isDelivered = o.status === 'Delivered'
+                      return (
+                        <div key={o.id} className="rounded-2xl border border-border/80 bg-card p-3.5 shadow-xs space-y-2.5">
+                          <div className="flex items-start justify-between border-b pb-2">
+                            <div>
+                              <span className="font-outfit font-black text-xs sm:text-sm text-foreground">Order #{o.id}</span>
+                              <p className="text-[10px] text-muted-foreground">{new Date(o.createdAt).toLocaleDateString('en-IN')}</p>
                             </div>
-                          ))}
-                        </div>
-                        {o.transactionId && (
-                          <p className="text-[10px] font-mono text-emerald-600 font-bold">UPI Ref: #{o.transactionId}</p>
-                        )}
-                        <div className="flex items-center justify-between pt-2 border-t">
-                          <span className="font-outfit font-black text-sm text-foreground">{formatPrice(o.total)}</span>
-                          <div className="flex gap-2">
-                            <button onClick={() => { onClose(); onOpenTracking(o.id); }} className="rounded-full bg-zinc-900 px-3 py-1 text-xs font-bold text-white hover:bg-black cursor-pointer">Track Live</button>
-                            <button onClick={() => { o.items.forEach((item) => addToCart(item)); toast.success('Dishes added to cart!'); }} className="rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white cursor-pointer">Reorder</button>
+                            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold ${
+                              isDelivered ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 border border-orange-500/30 animate-pulse'
+                            }`}>
+                              {o.status}
+                            </span>
+                          </div>
+                          <div className="space-y-1 text-xs">
+                            {o.items.map((i) => (
+                              <div key={i.id} className="flex justify-between text-muted-foreground">
+                                <span>{i.quantity} × {i.name}</span>
+                                <span className="font-semibold text-foreground">{formatPrice(i.price * i.quantity)}</span>
+                              </div>
+                            ))}
+                          </div>
+                          {o.transactionId && (
+                            <p className="text-[10px] font-mono text-emerald-600 font-bold">UPI Ref: #{o.transactionId}</p>
+                          )}
+                          <div className="flex items-center justify-between pt-2 border-t">
+                            <span className="font-outfit font-black text-sm text-foreground">{formatPrice(o.total)}</span>
+                            <div className="flex gap-2">
+                              {!isDelivered && (
+                                <button 
+                                  onClick={() => { onClose(); onOpenTracking(o.id); }} 
+                                  className="rounded-full bg-orange-500 hover:bg-orange-600 px-3.5 py-1 text-xs font-black text-white cursor-pointer shadow-xs flex items-center gap-1"
+                                >
+                                  <Bike size={12} /> Track Live
+                                </button>
+                              )}
+                              <button 
+                                onClick={() => { o.items.forEach((item) => addToCart(item)); toast.success('Dishes added to cart!'); }} 
+                                className="rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 px-3 py-1 text-xs font-bold cursor-pointer"
+                              >
+                                Reorder
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))
+                      )
+                    })
                   )}
                 </div>
               )}
 
-              {/* TRACKING TAB */}
+              {/* TRACKING TAB (ACTIVE LIVE DELIVERIES ONLY) */}
               {tab === 'tracking' && (
                 <div className="space-y-3">
-                  <h4 className="font-bold text-sm">Live Order Tracking</h4>
-                  {orders.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">No active orders to track.</p>
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-sm text-slate-900">Active Live Deliveries</h4>
+                    <span className="text-[11px] text-orange-600 font-bold">
+                      {orders.filter(o => o.status !== 'Delivered').length} in transit
+                    </span>
+                  </div>
+
+                  {orders.filter(o => o.status !== 'Delivered').length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-orange-200 bg-orange-50/40 p-6 text-center space-y-2">
+                      <Bike size={32} className="mx-auto text-orange-400 mb-1" />
+                      <p className="text-xs sm:text-sm font-black text-slate-800">No active deliveries in progress</p>
+                      <p className="text-[11px] text-slate-500">
+                        Live GPS tracking activates automatically when you place an order!
+                      </p>
+                    </div>
                   ) : (
-                    orders.map((o) => (
-                      <div key={o.id} className="rounded-2xl border p-4 bg-card space-y-2 shadow-xs">
+                    orders.filter(o => o.status !== 'Delivered').map((o) => (
+                      <div key={o.id} className="rounded-2xl border-2 border-orange-200 p-4 bg-white space-y-2.5 shadow-sm">
                         <div className="flex justify-between items-center">
-                          <span className="font-bold text-sm">#{o.id}</span>
-                          <span className="text-xs font-black text-orange-500">{o.status}</span>
+                          <span className="font-black text-sm text-slate-900">Order #{o.id}</span>
+                          <span className="rounded-full bg-emerald-100 text-emerald-800 px-2.5 py-0.5 text-[10px] font-black">{o.status}</span>
                         </div>
-                        <p className="text-xs text-muted-foreground truncate">📍 {o.deliveryAddress}</p>
-                        {o.transactionId && <p className="text-[11px] text-emerald-600 font-mono">UPI Ref: #{o.transactionId}</p>}
+                        <p className="text-xs text-slate-600 truncate flex items-center gap-1">
+                          <MapPin size={12} className="text-orange-500 shrink-0" /> {o.deliveryAddress}
+                        </p>
+                        {o.transactionId && <p className="text-[11px] text-emerald-600 font-mono font-bold">UPI Ref: #{o.transactionId}</p>}
                         <button
                           onClick={() => { onClose(); onOpenTracking(o.id); }}
-                          className="w-full rounded-xl bg-orange-500 py-2 text-xs font-black text-white hover:bg-orange-600 cursor-pointer shadow-xs"
+                          className="w-full rounded-xl bg-orange-500 py-2.5 text-xs font-black text-white hover:bg-orange-600 cursor-pointer shadow-xs flex items-center justify-center gap-1.5 transition-all"
                         >
-                          Open Live Tracking Map →
+                          <Navigation size={13} />
+                          <span>Open Live GPS Road Route →</span>
                         </button>
                       </div>
                     ))
@@ -858,15 +914,33 @@ function UserProfileDrawer({
               {/* ADDRESSES TAB */}
               {tab === 'addresses' && (
                 <div className="space-y-3 font-outfit">
-                  <button onClick={onOpenPermissions} className="w-full rounded-2xl border border-orange-500/40 bg-orange-500/10 p-3 text-xs font-bold text-orange-600 flex items-center justify-between cursor-pointer">
-                    <span className="flex items-center gap-1.5"><Navigation size={14} /> Update GPS Pin Location</span>
-                    <span className="text-[10px] bg-orange-500 text-white px-2 py-0.5 rounded-full">Change</span>
-                  </button>
-
-                  <div className="rounded-2xl border p-3.5 bg-card space-y-1 text-xs">
-                    <p className="font-bold flex items-center gap-1 text-foreground"><Home size={14} className="text-orange-500" /> Saved Delivery Address</p>
-                    <p className="text-muted-foreground">{editAddress || user.address || '1067, 8th Main Rd, Kaveri Layout, Marathahalli Village, Bengaluru'}</p>
-                    <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ Auto-filled at checkout</p>
+                  <div className="rounded-2xl border p-4 bg-card space-y-3 text-xs shadow-xs">
+                    <p className="font-bold flex items-center gap-1.5 text-slate-900 text-sm">
+                      <Home size={15} className="text-orange-500" /> Current Saved Address
+                    </p>
+                    <textarea 
+                      value={editAddress} 
+                      onChange={(e) => setEditAddress(e.target.value)} 
+                      rows={2} 
+                      placeholder="Enter flat / house / street in Marathahalli..." 
+                      className="w-full rounded-xl border bg-background p-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                    />
+                    <div className="flex gap-2">
+                      <button 
+                        type="button" 
+                        onClick={handleSaveProfile} 
+                        className="flex-1 rounded-xl bg-orange-500 py-2 text-xs font-black text-white hover:bg-orange-600 transition-all cursor-pointer shadow-xs"
+                      >
+                        Save Address
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={onOpenPermissions} 
+                        className="flex-1 rounded-xl border border-orange-500/40 bg-orange-50 py-2 text-xs font-bold text-orange-600 hover:bg-orange-100 transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      >
+                        <Compass size={13} /> Pick on Map
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -934,81 +1008,426 @@ function UserProfileDrawer({
   )
 }
 
-/* ==================== AUTH MODAL ==================== */
+/* ==================== AUTH MODAL (EMAIL OTP & PASSWORD) ==================== */
 function AuthModal({ open, onClose, onAuthSuccess }: { open: boolean; onClose: () => void; onAuthSuccess?: () => void }) {
   const login = useAppStore((s) => s.login)
-  const [mode, setMode] = useState<'login' | 'signup'>('signup')
-  const [name, setName] = useState('')
+  const [tab, setTab] = useState<'signin' | 'signup'>('signup')
+  
+  // Sign up flow steps: 'email' -> 'otp' -> 'password'
+  const [signupStep, setSignupStep] = useState<'email' | 'otp' | 'password'>('email')
+  
+  // Form fields
   const [email, setEmail] = useState('')
+  const [otpCode, setOtpCode] = useState('')
+  const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [address, setAddress] = useState('')
+  
+  // Status state
+  const [loading, setLoading] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(0)
+
+  // Cooldown countdown timer
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const timer = setInterval(() => setResendCooldown((prev) => Math.max(0, prev - 1)), 1000)
+    return () => clearInterval(timer)
+  }, [resendCooldown])
 
   if (!open) return null
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!phone.trim()) {
-      toast.error('Phone number is mandatory!')
+  // 1. Send OTP to Email via Resend SMTP
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+    if (!email.trim() || !email.includes('@')) {
+      toast.error('Please enter a valid email address!')
       return
     }
-    const displayName = name.trim() || email.split('@')[0] || 'Foodie'
-    login(displayName, email.trim() || 'foodie@bobs.com', phone.trim(), address.trim() || '1067, 8th Main Rd, Kaveri Layout, Marathahalli Village, Bengaluru')
-    toast.success(`Welcome to Bob's, ${displayName}! 🎉`)
-    onClose()
-    if (onAuthSuccess) onAuthSuccess()
+
+    setLoading(true)
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim(),
+        options: {
+          shouldCreateUser: true,
+        },
+      })
+
+      if (error) {
+        toast.error(`OTP Error: ${error.message}`)
+      } else {
+        toast.success(`6-digit verification code sent to ${email.trim()}!`)
+        setSignupStep('otp')
+        setResendCooldown(60)
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to send OTP')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 2. Verify Email OTP
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!otpCode.trim() || otpCode.trim().length < 6) {
+      toast.error('Please enter the 6-digit OTP from your email!')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token: otpCode.trim(),
+        type: 'email',
+      })
+
+      if (error) {
+        toast.error(`Invalid OTP: ${error.message}`)
+      } else {
+        toast.success('Email verified successfully! Now set your account password.')
+        setSignupStep('password')
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to verify OTP')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 3. Set Account Password & Name
+  const handleCompleteAccount = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!password.trim() || password.length < 6) {
+      toast.error('Password must be at least 6 characters!')
+      return
+    }
+    if (!name.trim()) {
+      toast.error('Please enter your full name!')
+      return
+    }
+
+    setLoading(true)
+    try {
+      // Update password and user metadata in Supabase Auth
+      const { error } = await supabase.auth.updateUser({
+        password: password.trim(),
+        data: {
+          full_name: name.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+        },
+      })
+
+      if (error) {
+        toast.error(`Error saving account: ${error.message}`)
+      } else {
+        // Save to customer_profiles table in Supabase
+        await supabase.from('customer_profiles').upsert({
+          email: email.trim().toLowerCase(),
+          full_name: name.trim(),
+          phone: phone.trim(),
+          saved_address: address.trim() || '1067, 8th Main Rd, Kaveri Layout, Marathahalli Village, Bengaluru',
+        }, { onConflict: 'email' })
+
+        login(
+          name.trim(),
+          email.trim(),
+          phone.trim() || '9550764604',
+          address.trim() || '1067, 8th Main Rd, Kaveri Layout, Marathahalli Village, Bengaluru'
+        )
+
+        toast.success(`Welcome to Bob's Kitchen, ${name.trim()}! Account created successfully. 🎉`)
+        onClose()
+        if (onAuthSuccess) onAuthSuccess()
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to complete registration')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 4. Sign In with Email & Password
+  const handlePasswordSignIn = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email.trim() || !password.trim()) {
+      toast.error('Please enter both Email and Password!')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
+      })
+
+      if (error) {
+        toast.error(`Sign In Failed: ${error.message}`)
+      } else {
+        // Fetch customer profile from Supabase
+        const { data: profile } = await supabase
+          .from('customer_profiles')
+          .select('*')
+          .eq('email', email.trim().toLowerCase())
+          .single()
+
+        const displayName = profile?.full_name || data.user?.user_metadata?.full_name || email.split('@')[0]
+        const displayPhone = profile?.phone || data.user?.user_metadata?.phone || ''
+        const displayAddr = profile?.saved_address || data.user?.user_metadata?.address || '1067, 8th Main Rd, Kaveri Layout, Marathahalli Village, Bengaluru'
+
+        login(displayName, email.trim(), displayPhone, displayAddr)
+        toast.success(`Welcome back, ${displayName}! 🎉`)
+        onClose()
+        if (onAuthSuccess) onAuthSuccess()
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Sign in error')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 font-sans">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }} className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border bg-card p-5 sm:p-7 text-foreground font-outfit shadow-2xl">
-        <button onClick={onClose} className="absolute right-3.5 top-3.5 rounded-full p-2 text-muted-foreground hover:bg-secondary cursor-pointer">
+      <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }} className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border-2 border-orange-200 bg-white p-5 sm:p-7 text-slate-900 font-outfit shadow-2xl">
+        <button onClick={onClose} className="absolute right-3.5 top-3.5 rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-900 cursor-pointer transition-all">
           <X size={18} />
         </button>
 
+        {/* Header Badge */}
         <div className="text-center mb-4">
-          <div className="mx-auto mb-2 flex size-11 items-center justify-center rounded-2xl bg-orange-500/10 text-orange-500">
+          <div className="mx-auto mb-2 flex size-12 items-center justify-center rounded-2xl bg-orange-500/10 text-orange-600">
             <Lock size={22} />
           </div>
-          <h3 className="font-outfit text-xl sm:text-2xl font-black">{mode === 'login' ? 'Sign In to Bob\'s' : 'Create Account'}</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">Phone number is mandatory for live order dispatch</p>
+          <h3 className="font-outfit text-xl sm:text-2xl font-black text-slate-900">
+            {tab === 'signin' ? "Sign In to Bob's Kitchen" : 'Create Gourmet Account'}
+          </h3>
+          <p className="text-xs text-slate-500 mt-0.5">
+            {tab === 'signin' ? 'Access your saved addresses, orders & offers' : 'Secure email verification powered by Resend SMTP'}
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3 font-outfit text-xs">
-          {mode === 'signup' && (
-            <div>
-              <label className="font-bold text-[11px] block mb-1">Your Full Name</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Rahul Sharma" className="w-full rounded-xl border bg-background px-3.5 py-2.5 font-semibold focus:outline-none" required />
-            </div>
-          )}
-
-          <div>
-            <label className="font-bold text-[11px] block mb-1">Phone Number (Mandatory) *</label>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g. 9550764604" className="w-full rounded-xl border bg-background px-3.5 py-2.5 font-semibold focus:outline-none" required />
-          </div>
-
-          <div>
-            <label className="font-bold text-[11px] block mb-1">Email ID</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="e.g. rahul@example.com" className="w-full rounded-xl border bg-background px-3.5 py-2.5 font-semibold focus:outline-none" required />
-          </div>
-
-          {mode === 'signup' && (
-            <div>
-              <label className="font-bold text-[11px] block mb-1">Delivery Address (Marathahalli)</label>
-              <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Flat / Building, Kaveri Layout, Marathahalli" className="w-full rounded-xl border bg-background px-3.5 py-2.5 font-semibold focus:outline-none" />
-            </div>
-          )}
-
-          <div className="flex items-center justify-between text-xs pt-1">
-            <button type="button" onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} className="text-orange-500 font-bold hover:underline">
-              {mode === 'login' ? 'Need an account? Sign Up' : 'Already have account? Sign In'}
-            </button>
-          </div>
-
-          <button type="submit" className="w-full rounded-full bg-orange-500 py-3 text-xs font-black text-white shadow-md hover:bg-orange-600 transition-all cursor-pointer">
-            {mode === 'login' ? 'Sign In & Fetch Details →' : 'Save Details & Continue →'}
+        {/* Tab Switcher */}
+        <div className="grid grid-cols-2 rounded-2xl bg-slate-100 p-1 mb-4 text-xs font-bold">
+          <button
+            type="button"
+            onClick={() => { setTab('signup'); setSignupStep('email'); }}
+            className={`py-2 rounded-xl transition-all cursor-pointer ${
+              tab === 'signup' ? 'bg-orange-500 text-white font-black shadow-xs' : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Create Account
           </button>
-        </form>
+          <button
+            type="button"
+            onClick={() => setTab('signin')}
+            className={`py-2 rounded-xl transition-all cursor-pointer ${
+              tab === 'signin' ? 'bg-orange-500 text-white font-black shadow-xs' : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Sign In
+          </button>
+        </div>
+
+        {/* ================= TAB 1: CREATE ACCOUNT VIA EMAIL OTP ================= */}
+        {tab === 'signup' && (
+          <div className="space-y-4">
+            {/* Step Progress Indicators */}
+            <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-slate-500 mb-2">
+              <span className={`flex items-center gap-1 ${signupStep === 'email' ? 'text-orange-600 font-black' : 'text-emerald-600'}`}>
+                1. Email {signupStep !== 'email' && '✓'}
+              </span>
+              <span>→</span>
+              <span className={`flex items-center gap-1 ${signupStep === 'otp' ? 'text-orange-600 font-black' : signupStep === 'password' ? 'text-emerald-600' : 'text-slate-400'}`}>
+                2. Enter OTP {signupStep === 'password' && '✓'}
+              </span>
+              <span>→</span>
+              <span className={`flex items-center gap-1 ${signupStep === 'password' ? 'text-orange-600 font-black' : 'text-slate-400'}`}>
+                3. Set Password
+              </span>
+            </div>
+
+            {/* STEP 1: ENTER EMAIL */}
+            {signupStep === 'email' && (
+              <form onSubmit={handleSendOtp} className="space-y-3 text-xs">
+                <div>
+                  <label className="font-bold text-[11px] block mb-1 text-slate-700">Email Address *</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="foodie@example.com"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                    required
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    We will send a 6-digit one-time passcode from <strong>noreply@bobskitchen.shop</strong>
+                  </p>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full rounded-full bg-orange-500 py-3 text-xs font-black text-white shadow-md hover:bg-orange-600 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {loading ? <RefreshCw size={14} className="animate-spin" /> : <Zap size={14} />}
+                  <span>{loading ? 'Sending Verification Code...' : 'Send Verification OTP →'}</span>
+                </button>
+              </form>
+            )}
+
+            {/* STEP 2: ENTER OTP */}
+            {signupStep === 'otp' && (
+              <form onSubmit={handleVerifyOtp} className="space-y-3 text-xs">
+                <div className="rounded-2xl bg-orange-50 p-3 border border-orange-200 text-slate-700 text-center space-y-1">
+                  <p className="text-[11px] font-bold">Check your inbox for OTP</p>
+                  <p className="text-xs font-black text-orange-600">{email}</p>
+                </div>
+
+                <div>
+                  <label className="font-bold text-[11px] block mb-1 text-slate-700">Enter 6-Digit Email OTP Code *</label>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                    placeholder="123456"
+                    className="w-full text-center tracking-widest text-lg font-mono font-black rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                    required
+                  />
+                </div>
+
+                <div className="flex items-center justify-between text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => setSignupStep('email')}
+                    className="text-slate-500 hover:text-slate-800 font-bold"
+                  >
+                    ← Change Email
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={resendCooldown > 0 || loading}
+                    onClick={() => handleSendOtp()}
+                    className="text-orange-600 font-bold hover:underline disabled:text-slate-400"
+                  >
+                    {resendCooldown > 0 ? `Resend Code in ${resendCooldown}s` : 'Resend Code'}
+                  </button>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full rounded-full bg-orange-500 py-3 text-xs font-black text-white shadow-md hover:bg-orange-600 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {loading ? <RefreshCw size={14} className="animate-spin" /> : <Check size={14} />}
+                  <span>{loading ? 'Verifying OTP...' : 'Verify OTP & Continue →'}</span>
+                </button>
+              </form>
+            )}
+
+            {/* STEP 3: SET PASSWORD & FULL NAME */}
+            {signupStep === 'password' && (
+              <form onSubmit={handleCompleteAccount} className="space-y-3 text-xs">
+                <div>
+                  <label className="font-bold text-[11px] block mb-1 text-slate-700">Full Name *</label>
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Rahul Sharma"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-[11px] block mb-1 text-slate-700">Create Account Password *</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="At least 6 characters"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-[11px] block mb-1 text-slate-700">Phone Number (Optional here, mandatory at checkout)</label>
+                  <input
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="9550764604"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full rounded-full bg-orange-500 py-3 text-xs font-black text-white shadow-md hover:bg-orange-600 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {loading ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                  <span>{loading ? 'Creating Account...' : 'Complete Registration & Sign In →'}</span>
+                </button>
+              </form>
+            )}
+          </div>
+        )}
+
+        {/* ================= TAB 2: SIGN IN WITH PASSWORD OR OTP ================= */}
+        {tab === 'signin' && (
+          <form onSubmit={handlePasswordSignIn} className="space-y-3 text-xs font-outfit">
+            <div>
+              <label className="font-bold text-[11px] block mb-1 text-slate-700">Email Address *</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="foodie@example.com"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="font-bold text-[11px] block mb-1 text-slate-700">Password *</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Your account password"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                required
+              />
+            </div>
+
+            <div className="flex items-center justify-between text-[11px] pt-1">
+              <button
+                type="button"
+                onClick={() => { setTab('signup'); setSignupStep('email'); }}
+                className="text-orange-600 font-bold hover:underline"
+              >
+                Sign in with Email OTP instead
+              </button>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-full bg-orange-500 py-3 text-xs font-black text-white shadow-md hover:bg-orange-600 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {loading ? <RefreshCw size={14} className="animate-spin" /> : <ArrowRight size={14} />}
+              <span>{loading ? 'Authenticating...' : 'Sign In to My Account →'}</span>
+            </button>
+          </form>
+        )}
       </motion.div>
     </div>
   )
@@ -2462,25 +2881,47 @@ function Checkout({
                   {paymentStatus !== 'expired' && (
                     <div className="rounded-2xl bg-white border border-orange-200/80 p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-center gap-5">
                       
-                      {/* DYNAMIC QR CODE WITH WARM ACCENT FRAME */}
-                      <div className="relative size-44 sm:size-48 rounded-2xl bg-white p-2.5 shrink-0 shadow-md border-2 border-orange-400 flex items-center justify-center">
-                        {qrDataUrl ? (
-                          <img 
-                            src={qrDataUrl} 
-                            alt={`UPI QR for ${qrOrderId}`} 
-                            className="size-full object-contain"
-                          />
+                      {/* DYNAMIC QR CODE WITH WARM ACCENT FRAME OR BLURRED PLACEHOLDER */}
+                      <div className="relative size-44 sm:size-48 rounded-2xl bg-white p-2.5 shrink-0 shadow-md border-2 border-orange-400 flex items-center justify-center overflow-hidden">
+                        {paymentStatus === 'waiting' && qrDataUrl ? (
+                          <>
+                            <img 
+                              src={qrDataUrl} 
+                              alt={`UPI QR for ${qrOrderId}`} 
+                              className="size-full object-contain"
+                            />
+                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-emerald-600 px-3 py-0.5 text-[9px] font-black text-white shadow-sm whitespace-nowrap flex items-center gap-1 animate-pulse">
+                              <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
+                              <span>Live Auto-Detection</span>
+                            </div>
+                          </>
                         ) : (
-                          <div className="size-full flex flex-col items-center justify-center text-slate-400 text-xs font-bold gap-2 animate-pulse">
-                            <RefreshCw size={20} className="animate-spin text-orange-500" />
-                            <span>Generating QR...</span>
-                          </div>
-                        )}
-                        {paymentStatus === 'waiting' && (
-                          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-emerald-600 px-3 py-0.5 text-[9px] font-black text-white shadow-sm whitespace-nowrap flex items-center gap-1 animate-pulse">
-                            <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
-                            <span>Live Auto-Detection</span>
-                          </div>
+                          <>
+                            {/* Blurred QR Placeholder Mockup */}
+                            <div className="size-full flex items-center justify-center filter blur-[5px] opacity-60 select-none">
+                              <QrCode size={130} className="text-slate-800" />
+                            </div>
+                            {/* Interactive Overlay Button */}
+                            <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] p-2 flex flex-col items-center justify-center text-center gap-1.5 z-10">
+                              <span className="text-[10px] font-extrabold text-orange-600 uppercase tracking-wide">
+                                Dynamic UPI QR
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (!user?.phone && !guestPhone.trim()) {
+                                    toast.error('Please enter your phone number first!')
+                                    return
+                                  }
+                                  generatePaymentQR()
+                                }}
+                                className="rounded-xl bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 text-xs font-black shadow-md flex items-center gap-1.5 cursor-pointer transition-all hover:scale-105"
+                              >
+                                <Zap size={13} className="fill-white" />
+                                <span>Generate QR</span>
+                              </button>
+                            </div>
+                          </>
                         )}
                       </div>
 
@@ -2494,9 +2935,15 @@ function Checkout({
                           <p className="text-xs text-slate-500 font-medium">
                             Payable Amount: <strong className="text-orange-600 text-base font-black">{formatPrice(total)}</strong>
                           </p>
-                          <p className="text-[11px] text-slate-400 font-mono mt-0.5">
-                            Order ID: <span className="font-bold text-slate-700">{qrOrderId}</span>
-                          </p>
+                          {qrOrderId ? (
+                            <p className="text-[11px] text-slate-400 font-mono mt-0.5">
+                              Order ID: <span className="font-bold text-slate-700">{qrOrderId}</span>
+                            </p>
+                          ) : (
+                            <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+                              Click <strong className="text-orange-600">Generate QR</strong> to create an instant dynamic UPI code.
+                            </p>
+                          )}
                         </div>
 
                         {/* UPI ID with 1-click Copy */}

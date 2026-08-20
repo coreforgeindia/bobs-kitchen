@@ -71,11 +71,38 @@ CREATE TABLE IF NOT EXISTS pp_sms_data (
 );
 
 -- =========================================================================
--- 4. ROW LEVEL SECURITY (RLS) & IDEMPOTENT POLICIES
+-- 4. CUSTOMER PROFILES TABLE (User accounts, saved phone numbers & addresses)
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS customer_profiles (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID,
+  email TEXT UNIQUE NOT NULL,
+  full_name TEXT,
+  phone TEXT,
+  saved_address TEXT,
+  wallet_coins INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- =========================================================================
+-- 5. ROW LEVEL SECURITY (RLS) & IDEMPOTENT POLICIES
 -- =========================================================================
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pp_devices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pp_sms_data ENABLE ROW LEVEL SECURITY;
+ALTER TABLE customer_profiles ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if re-running script to avoid "already exists" errors
+DROP POLICY IF EXISTS "Allow public select on customer_profiles" ON customer_profiles;
+DROP POLICY IF EXISTS "Allow public insert on customer_profiles" ON customer_profiles;
+DROP POLICY IF EXISTS "Allow public update on customer_profiles" ON customer_profiles;
+DROP POLICY IF EXISTS "Allow public delete on customer_profiles" ON customer_profiles;
+
+CREATE POLICY "Allow public select on customer_profiles" ON customer_profiles FOR SELECT USING (true);
+CREATE POLICY "Allow public insert on customer_profiles" ON customer_profiles FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update on customer_profiles" ON customer_profiles FOR UPDATE USING (true);
+CREATE POLICY "Allow public delete on customer_profiles" ON customer_profiles FOR DELETE USING (true);
 
 -- Drop existing policies if re-running script to avoid "already exists" errors
 DROP POLICY IF EXISTS "Allow public select on orders" ON orders;
