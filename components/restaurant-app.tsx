@@ -377,14 +377,14 @@ function FormattedHeader({
             <span className="truncate text-[10.5px] font-outfit">{currentAddress.split(',')[0]}</span>
           </button>
 
-          {/* MY CART BUTTON */}
+          {/* MY CART BUTTON - SWIGGY ORANGE */}
           <button 
             onClick={onCart} 
-            className="relative flex items-center justify-center rounded-full bg-[#111111] size-8 sm:size-auto sm:px-3.5 sm:py-2 md:px-4 md:py-2.5 text-xs font-bold text-white shadow-md hover:bg-orange-500 active:scale-95 transition-all cursor-pointer shrink-0" 
+            className="relative flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 active:scale-95 size-8 sm:size-auto sm:px-4 sm:py-2.5 text-xs font-black text-white shadow-md transition-all cursor-pointer shrink-0" 
             aria-label="Open cart"
           >
             <ShoppingCart size={15} />
-            <span className="hidden sm:inline font-outfit font-extrabold ml-1.5">My Cart</span>
+            <span className="hidden sm:inline font-outfit font-black ml-1.5 uppercase tracking-wider">Cart</span>
             {count > 0 && (
               <span className="absolute -top-1 -right-1 sm:static sm:ml-1.5 flex size-4 sm:size-5 items-center justify-center rounded-full bg-orange-500 text-[9px] sm:text-[11px] font-extrabold text-white animate-pulse">
                 {count}
@@ -420,7 +420,7 @@ function FormattedHeader({
           <span className="truncate text-[11px]">{currentAddress}</span>
         </button>
         <button onClick={onOpenPermissions} className="text-[10px] text-orange-600 font-extrabold uppercase shrink-0 pl-2">
-          Change 📍
+          Change
         </button>
       </div>
     </header>
@@ -482,26 +482,26 @@ function LiveTrackingBottomBar({ onOpenTracking }: { onOpenTracking: (orderId: s
     <motion.div 
       initial={{ y: 50, opacity: 0 }} 
       animate={{ y: 0, opacity: 1 }} 
-      className="fixed bottom-0 left-0 right-0 z-40 border-t border-orange-500/40 bg-zinc-950/95 text-white backdrop-blur-md px-3 sm:px-6 py-2.5 shadow-2xl font-outfit"
+      className="fixed bottom-0 left-0 right-0 z-40 border-t-2 border-orange-200 bg-white/95 text-slate-900 backdrop-blur-md px-3 sm:px-6 py-2.5 shadow-xl font-outfit"
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex size-7 sm:size-8 items-center justify-center rounded-full bg-orange-500/20 text-orange-400 font-bold shrink-0 animate-pulse">
+          <div className="flex size-7 sm:size-8 items-center justify-center rounded-full bg-orange-500/15 text-orange-600 font-bold shrink-0 animate-pulse">
             <Bike size={16} />
           </div>
           <div className="min-w-0">
-            <p className="text-xs sm:text-sm font-extrabold truncate text-white">
-              Order <span className="text-orange-400 font-mono">#{activeOrder.id}</span> · <span className="text-emerald-400">{activeOrder.status}</span>
+            <p className="text-xs sm:text-sm font-black truncate text-slate-900">
+              Order <span className="text-orange-600 font-mono font-bold">#{activeOrder.id}</span> · <span className="text-emerald-700 font-bold">{activeOrder.status}</span>
             </p>
-            <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">
-              {activeOrder.mode} · {activeOrder.items.length} dishes · ETA: {activeOrder.estimatedDeliveryMins || 20} mins
+            <p className="text-[10px] sm:text-[11px] text-slate-500 truncate">
+              {activeOrder.mode} · {activeOrder.items.length} items · ETA: {activeOrder.estimatedDeliveryMins || 20} mins
             </p>
           </div>
         </div>
 
         <button
           onClick={() => onOpenTracking(activeOrder.id)}
-          className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 px-3.5 sm:px-4 py-1.5 text-xs font-black text-white hover:scale-105 transition-all shadow-md shrink-0 cursor-pointer"
+          className="flex items-center gap-1.5 rounded-full bg-orange-500 hover:bg-orange-600 px-3.5 sm:px-4 py-1.5 text-xs font-black text-white hover:scale-105 transition-all shadow-md shrink-0 cursor-pointer"
         >
           <span>Track Live</span>
           <ArrowRight size={13} />
@@ -1014,7 +1014,7 @@ function AuthModal({ open, onClose, onAuthSuccess }: { open: boolean; onClose: (
   )
 }
 
-/* ==================== QUANTITY STEPPER ==================== */
+/* ==================== QUANTITY STEPPER (SWIGGY STYLE) ==================== */
 function QuantityStepper({ item, compact = false }: { item: MenuItem; compact?: boolean }) {
   const add = useAppStore((s) => s.addToCart)
   const update = useAppStore((s) => s.updateQuantity)
@@ -1023,20 +1023,23 @@ function QuantityStepper({ item, compact = false }: { item: MenuItem; compact?: 
 
   if (compact && qty === 0) {
     return (
-      <button onClick={() => { add(item); toast.success(`${item.name} added`, { icon: '🛒' }); }} className="rounded-full bg-orange-500 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-[11px] font-bold text-white shadow-xs hover:bg-orange-600 transition-all cursor-pointer font-outfit shrink-0">
-        + Add
+      <button 
+        onClick={() => { add(item); toast.success(`${item.name} added to cart`); }} 
+        className="rounded-xl border-2 border-orange-500 bg-white hover:bg-orange-500 text-orange-600 hover:text-white px-3 py-1 text-[11px] font-black shadow-xs transition-all cursor-pointer font-outfit uppercase tracking-wider shrink-0"
+      >
+        ADD +
       </button>
     )
   }
 
   return (
-    <div className="inline-flex items-center rounded-full border border-border bg-secondary/80 p-0.5 shadow-inner shrink-0 w-fit">
-      <button onClick={() => update(item.id, qty - 1)} disabled={!qty} className="flex size-5 sm:size-6.5 items-center justify-center rounded-full bg-background hover:bg-secondary disabled:opacity-30 cursor-pointer shrink-0">
-        <Minus size={10} />
+    <div className="inline-flex items-center rounded-xl border border-orange-500 bg-orange-500 text-white p-0.5 shadow-xs shrink-0 w-fit font-outfit">
+      <button onClick={() => update(item.id, qty - 1)} disabled={!qty} className="flex size-5.5 sm:size-6 items-center justify-center rounded-lg bg-orange-600 hover:bg-orange-700 disabled:opacity-40 cursor-pointer shrink-0 transition-colors">
+        <Minus size={11} />
       </button>
-      <span className="w-4 sm:w-5.5 text-center text-[10px] sm:text-xs font-black font-outfit px-0.5">{qty}</span>
-      <button onClick={() => { add(item); toast.success(`${item.name} added`, { icon: '🛒' }); }} className="flex size-5 sm:size-6.5 items-center justify-center rounded-full bg-orange-500 text-white shadow hover:bg-orange-600 cursor-pointer shrink-0">
-        <Plus size={10} />
+      <span className="w-5 text-center text-xs font-black px-0.5">{qty}</span>
+      <button onClick={() => { add(item); toast.success(`${item.name} added`); }} className="flex size-5.5 sm:size-6 items-center justify-center rounded-lg bg-orange-600 hover:bg-orange-700 cursor-pointer shrink-0 transition-colors">
+        <Plus size={11} />
       </button>
     </div>
   )
@@ -1052,9 +1055,9 @@ function FoodCardGrid({ item, index = 0 }: { item: MenuItem; index?: number }) {
     <motion.article initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: index * 0.04 }} className={`group flex flex-col justify-between overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs hover:shadow-md transition-all font-outfit ${isSoldOut ? 'opacity-65' : ''}`}>
       <div className="relative aspect-[1.55] sm:aspect-[1.5] overflow-hidden bg-secondary">
         <img src={item.image} alt={item.name} className="size-full object-cover transition duration-700 group-hover:scale-105" loading="lazy" />
-        {item.bestseller && !isSoldOut && <span className="absolute left-1.5 top-1.5 rounded-full bg-orange-500 px-2 py-0.5 text-[7.5px] sm:text-[9px] font-black uppercase text-white shadow-sm font-outfit">🔥 Bestseller</span>}
+        {item.bestseller && !isSoldOut && <span className="absolute left-1.5 top-1.5 rounded-full bg-orange-500 px-2 py-0.5 text-[7.5px] sm:text-[9px] font-black uppercase text-white shadow-sm font-outfit">Bestseller</span>}
         {isSoldOut && <span className="absolute left-1.5 top-1.5 rounded-full bg-rose-600 px-2 py-0.5 text-[8px] sm:text-[9px] font-black uppercase text-white shadow-sm">Sold Out</span>}
-        <button onClick={() => { toggle(item.id); toast(favorite ? 'Removed from saved' : 'Saved ❤️'); }} className="absolute right-1.5 top-1.5 rounded-full bg-background/90 p-1 text-foreground backdrop-blur shadow-xs cursor-pointer">
+        <button onClick={() => { toggle(item.id); toast(favorite ? 'Removed from favorites' : 'Saved to favorites'); }} className="absolute right-1.5 top-1.5 rounded-full bg-background/90 p-1 text-foreground backdrop-blur shadow-xs cursor-pointer">
           <Heart size={11} fill={favorite ? 'rgb(249, 115, 22)' : 'none'} className={favorite ? 'text-orange-500' : ''} />
         </button>
       </div>
@@ -2137,13 +2140,24 @@ function Checkout({
 
               {user ? (
                 /* Auto-fetched logged-in view */
-                <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200 text-xs font-outfit space-y-1">
+                <div className="rounded-2xl bg-orange-50/50 p-4 border border-orange-200 text-xs font-outfit space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <p className="font-bold text-slate-900 text-sm">👤 {user.name}</p>
-                    <span className="text-emerald-600 font-bold text-[11px]">Saved Profile</span>
+                    <p className="font-black text-slate-900 text-sm flex items-center gap-1.5">
+                      <User size={15} className="text-orange-500" />
+                      <span>{user.name}</span>
+                    </p>
+                    <span className="text-emerald-700 font-extrabold text-[11px] bg-emerald-100/80 px-2 py-0.5 rounded-md">Verified Account</span>
                   </div>
-                  <p className="text-slate-600">📱 Phone: <span className="font-bold text-slate-900">{user.phone || '9550764604'}</span></p>
-                  <p className="text-slate-600">✉️ Email: <span className="font-semibold text-slate-900">{user.email || 'foodie@bobs.com'}</span></p>
+                  <p className="text-slate-600 flex items-center gap-1.5">
+                    <Phone size={13} className="text-orange-500" />
+                    <span>Phone: <strong className="text-slate-900 font-mono">{user.phone || '9550764604'}</strong></span>
+                  </p>
+                  {user.email && (
+                    <p className="text-slate-600 flex items-center gap-1.5">
+                      <span className="text-orange-500 font-bold">@</span>
+                      <span>Email: <strong className="text-slate-900">{user.email}</strong></span>
+                    </p>
+                  )}
                 </div>
               ) : (
                 /* Guest form if not logged in */
@@ -2184,8 +2198,9 @@ function Checkout({
                   ) : (
                     /* Takeaway guest form: Only phone number and optional name */
                     <div className="space-y-2 text-xs">
-                      <div className="rounded-xl bg-orange-500/10 p-2.5 border border-orange-500/20 text-orange-700 text-xs font-semibold">
-                        🛍️ Takeaway selected: You only need to provide your Phone Number for pickup!
+                      <div className="rounded-xl bg-orange-500/10 p-2.5 border border-orange-500/20 text-orange-700 text-xs font-bold flex items-center gap-2">
+                        <Package size={15} className="shrink-0 text-orange-600" />
+                        <span>Takeaway selected: You only need to provide your Phone Number for pickup!</span>
                       </div>
                       <div className="grid gap-3 sm:grid-cols-2">
                         <div>
