@@ -38,8 +38,9 @@ export const restaurantStats = {
 // Curated reliable high-resolution food images from Unsplash & local assets
 const images = {
   paneerSnackPack: 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&w=800&q=80',
-  chickenSnackPack: 'https://images.unsplash.com/photo-1626074353765-517a681e40be?auto=format&fit=crop&w=800&q=80',
-  chickenJalfreziSnackPack: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=800&q=80',
+  chickenSnackPack: '/chicken-snack-pack.jpg',
+  vegSnackPack: '/veg-snack-pack.jpg',
+  chickenJalfreziSnackPack: '/chicken-jalfrezi-snack-pack.png',
   vegBurger: '/veg-burger.png',
   chickenBurger: '/chicken-burger.png',
   crunchyPaneerRoll: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80',
@@ -66,11 +67,11 @@ export const menuItems: MenuItem[] = [
   // FUSION SNACK PACK (OUR SIGNATURE)
   {
     id: 'paneer-tikka-snack-pack',
-    name: 'Paneer Tikka Snack Pack',
+    name: 'Veg Snack Pack',
     category: 'Fusion Snack Pack',
     price: 120,
     description: 'Crispy cottage cheese paneer tikka cubes served with signature dipping sauce & golden fries.',
-    image: images.paneerSnackPack,
+    image: images.vegSnackPack,
     veg: true,
     rating: 4.8,
     reviewCount: 482,
@@ -81,7 +82,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     id: 'chicken-tikka-snack-pack',
-    name: 'Chicken Tikka Snack Pack',
+    name: 'Chicken Snack Pack',
     category: 'Fusion Snack Pack',
     price: 120,
     description: 'Smoky grilled chicken tikka bites, seasoned crispy fries, and house spicy mayo dip.',
@@ -96,7 +97,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     id: 'chicken-jalfrezi-snack-pack',
-    name: 'Chicken Jalfrezi Snack Pack (Wedges)',
+    name: 'Chicken Jalfrezi Snack Pack',
     category: 'Fusion Snack Pack',
     price: 130,
     description: 'Spiced chicken jalfrezi tossed with crunchy bell peppers, crispy potato wedges, and mint dip.',
@@ -552,7 +553,7 @@ export const menuCategories: CategoryItem[] = [
 export const galleryImages = [images.vegBurger, images.periPeriFries, images.crunchyPaneerRoll, images.paneerSandwich, images.tiramisu, images.chickenBurger]
 export const formatPrice = (value: number) => `₹${value.toLocaleString('en-IN')}`
 
-// Cafe Coins - Launch Offer (50% Cashback) Matrix
+// Flat 10% Discount — Only Active Offer
 export type CafeCoinOffer = {
   spendMin: number
   coins: number
@@ -560,47 +561,19 @@ export type CafeCoinOffer = {
   badge: string
 }
 
-export const cafeCoinOffers: CafeCoinOffer[] = [
-  { spendMin: 200, coins: 100, usableAbove: 500, badge: '50% Cashback' },
-  { spendMin: 300, coins: 150, usableAbove: 500, badge: '50% Cashback' },
-  { spendMin: 500, coins: 250, usableAbove: 700, badge: '50% Cashback' },
-  { spendMin: 700, coins: 350, usableAbove: 900, badge: '50% Cashback' },
-  { spendMin: 999, coins: 500, usableAbove: 1200, badge: 'Max ₹500 Cashback' },
-]
+export const cafeCoinOffers: CafeCoinOffer[] = []
 
 export const calculateCoinsEarned = (orderSubtotal: number): { coins: number; nextUsableAbove: number } => {
-  const eligible = [...cafeCoinOffers].reverse().find((o) => orderSubtotal >= o.spendMin)
-  if (eligible) {
-    return { coins: eligible.coins, nextUsableAbove: eligible.usableAbove }
-  }
   return { coins: 0, nextUsableAbove: 0 }
 }
 
 export const specialOffers = [
   {
-    id: 'coin-launch',
-    code: 'CAFE50',
-    title: 'Cafe Coins 50% Cashback Launch Offer',
-    desc: 'Get up to ₹500 Cafe Coins credited instantly based on your order spend value!',
-    badge: 'Launch Special',
-    bg: 'from-amber-500/15 via-orange-500/10 to-transparent',
-    border: 'border-amber-500/40',
-  },
-  {
-    id: 'offer-1',
-    code: 'MARATHAHALLI',
-    title: 'Free Express Delivery in Marathahalli',
-    desc: 'Get 100% Free Express Delivery within 3 km radius on orders above ₹300.',
-    badge: '3km Radius Deal',
-    bg: 'from-emerald-500/15 via-teal-500/10 to-transparent',
-    border: 'border-emerald-500/40',
-  },
-  {
-    id: 'offer-2',
-    code: 'BOB20',
-    title: 'Flat 20% Instant Discount',
-    desc: 'Apply coupon BOB20 on any order above ₹250 to get flat 20% discount instantly.',
-    badge: 'Feast Deal',
+    id: 'offer-flat10',
+    code: 'BOB10',
+    title: '10% Flat Discount on Every Order',
+    desc: 'Apply coupon BOB10 at checkout to get a flat 10% instant discount on your entire order. No minimum order value!',
+    badge: 'Active Offer',
     bg: 'from-orange-500/15 via-amber-500/10 to-transparent',
     border: 'border-orange-500/40',
   },

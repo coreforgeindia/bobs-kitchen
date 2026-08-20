@@ -4,7 +4,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { menuItems as defaultMenuItems, type MenuItem, calculateCoinsEarned } from './menu-data'
 
-export type OrderMode = 'Delivery' | 'Takeaway' | 'Dining in'
+export type OrderMode = 'Delivery' | 'Takeaway'
 export type CartLine = MenuItem & { quantity: number }
 
 export type Order = { 
@@ -262,7 +262,6 @@ export const useAppStore = create<AppState>()(persist((set, get) => ({
       total,
       status: 'Order Received',
       mode: effectiveMode,
-      tableNo: effectiveMode === 'Dining in' ? (opts.tableNo || 'Table 1') : undefined,
       deliveryAddress: effectiveMode === 'Takeaway' 
         ? 'Takeaway Pickup · Bob\'s Satellite Kitchen (1067, 8th Main Rd, Kaveri Layout, Marathahalli)'
         : (opts.deliveryAddress || state.user?.address || '1067, 8th Main Rd, Kaveri Layout, Marathahalli, Bengaluru'),

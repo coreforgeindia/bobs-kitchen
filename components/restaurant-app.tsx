@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'react-hot-toast'
 import { 
@@ -9,12 +9,14 @@ import {
   Copy, MapPin, Phone, User, Zap, LogOut, Lock, CheckCircle2, Package, 
   Settings, Wallet, Grid, List, LayoutGrid, AlignJustify, Navigation, 
   Bell, Globe, Compass, Home, Sparkles, HelpCircle, Tag, Info, Flame,
-  QrCode, ExternalLink, MessageCircle, AlertTriangle, Clock, ArrowUpRight, Award
+  QrCode, ExternalLink, MessageCircle, AlertTriangle, Clock, ArrowUpRight, Award, RefreshCw, ShieldCheck
 } from 'lucide-react'
 import { 
   categories, menuCategories, formatPrice, galleryImages, menuItems, specialOffers, 
-  customerReviews, faqItems, cafeCoinOffers, calculateCoinsEarned, restaurantStats, type MenuItem 
+  customerReviews, faqItems, calculateCoinsEarned, restaurantStats, type MenuItem 
 } from '@/lib/menu-data'
+import { supabase, generateUpiUri, generateOrderId, PAYMENT_TIMEOUT_SECONDS, PAYMENT_POLL_INTERVAL_MS, UPI_CONFIG } from '@/lib/supabase'
+import QRCode from 'qrcode'
 import { cartCount, useAppStore, type Order, type OrderMode } from '@/lib/store'
 import dynamic from 'next/dynamic'
 
@@ -869,23 +871,24 @@ function UserProfileDrawer({
                 </div>
               )}
 
-              {/* WALLET / CAFE COINS TAB */}
+              {/* OFFERS & DISCOUNTS TAB */}
               {tab === 'wallet' && (
                 <div className="space-y-3 font-outfit">
-                  <div className="rounded-2xl bg-zinc-950 p-5 text-white space-y-2 border border-orange-500/30 shadow-lg">
-                    <p className="text-[10px] font-black uppercase tracking-wider text-orange-400">BOB'S CAFE COINS WALLET</p>
-                    <h2 className="text-3xl font-black text-amber-400">₹{user.walletCoins || 100}</h2>
-                    <p className="text-[11px] text-white/70">50% cashback coins earned from your orders! Usable at checkout.</p>
+                  <div className="rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 p-5 text-white space-y-2 border border-orange-400 shadow-md">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-orange-100">EXCLUSIVE ACTIVE OFFER</p>
+                    <h2 className="text-3xl font-black text-white">10% FLAT OFF</h2>
+                    <p className="text-[11px] text-white/90">Apply coupon code <strong className="underline">BOB10</strong> at checkout on every order!</p>
                   </div>
 
-                  <div className="rounded-2xl border p-3.5 bg-card space-y-2 text-xs">
-                    <p className="font-bold">Launch Offer Cashback Tiers:</p>
-                    {cafeCoinOffers.map((tier, idx) => (
-                      <div key={idx} className="flex justify-between items-center text-[11px] py-1 border-b border-border/40">
-                        <span>Spend {formatPrice(tier.spendMin)}+</span>
-                        <span className="text-emerald-600 font-black">Get ₹{tier.coins} Coins (Usable above ₹{tier.usableAbove})</span>
+                  <div className="rounded-2xl border border-border bg-card p-3.5 space-y-2 text-xs">
+                    <p className="font-bold text-foreground">Available Coupons:</p>
+                    <div className="flex justify-between items-center text-[11px] py-1.5 border-b border-border/40">
+                      <div>
+                        <span className="font-mono font-bold text-orange-600 bg-orange-500/10 px-2 py-0.5 rounded mr-2">BOB10</span>
+                        <span className="text-muted-foreground">Flat 10% instant discount</span>
                       </div>
-                    ))}
+                      <span className="text-emerald-600 font-black">Active</span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1241,37 +1244,27 @@ function HomeView({ setView, onSelectCategory, onOpenPermissions }: { setView: (
               </p>
             </div>
 
-            <div className="flex gap-2">
-              <div className="rounded-2xl border bg-secondary/40 p-3 text-center min-w-[90px]">
-                <p className="text-lg font-black text-emerald-600">4.8 ★</p>
-                <p className="text-[10px] text-muted-foreground">5,141+ Reviews</p>
-              </div>
-              <div className="rounded-2xl border bg-secondary/40 p-3 text-center min-w-[90px]">
-                <p className="text-lg font-black text-orange-600">20 Min</p>
-                <p className="text-[10px] text-muted-foreground">3km Express</p>
-              </div>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* LAUNCH OFFER / CAFE COINS TEASER */}
+      {/* 10% FLAT DISCOUNT OFFER BANNER */}
       <section className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 mt-8 font-outfit">
-        <div className="relative overflow-hidden rounded-3xl border border-amber-500/40 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/5 p-5 sm:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="relative overflow-hidden rounded-3xl border border-orange-500/40 bg-gradient-to-r from-orange-500/15 via-amber-500/10 to-orange-500/5 p-5 sm:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2">
-            <span className="rounded-full bg-amber-500/20 text-amber-600 border border-amber-500/40 px-3 py-1 text-xs font-black uppercase">
-              🪙 Cafe Coins Launch Offer
+            <span className="rounded-full bg-orange-500/20 text-orange-600 border border-orange-500/40 px-3 py-1 text-xs font-black uppercase">
+              🔥 Limited Time Offer
             </span>
-            <h3 className="text-xl sm:text-3xl font-black text-foreground">Get 50% Cashback in Cafe Coins!</h3>
+            <h3 className="text-xl sm:text-3xl font-black text-foreground">10% Flat Discount on Every Order!</h3>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-xl">
-              Spend ₹200 get ₹100 coins, spend ₹300 get ₹150 coins, spend ₹500 get ₹250 coins, spend ₹700 get ₹350 coins, or spend ₹999+ and get ₹500 coins instantly credited!
+              Use coupon code <strong className="text-orange-600">BOB10</strong> at checkout to get a flat 10% instant discount on your entire order. No minimum order value!
             </p>
           </div>
           <button 
             onClick={() => setView('offers')} 
             className="rounded-full bg-orange-500 px-6 py-3 text-xs font-black text-white hover:bg-orange-600 shadow-lg cursor-pointer transition-all shrink-0"
           >
-            View Deal Orbit & Coins →
+            View Offer Details →
           </button>
         </div>
       </section>
@@ -1469,69 +1462,48 @@ function OffersView({ setView }: { setView: (v: ViewType) => void }) {
     <motion.main initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 py-6 sm:py-10 font-outfit space-y-8">
       <div className="text-center max-w-2xl mx-auto">
         <span className="rounded-full bg-orange-500/15 text-orange-600 px-3.5 py-1 text-xs font-black uppercase border border-orange-500/30">
-          🔥 DEAL ORBIT & REWARDS
+          🔥 ACTIVE OFFERS
         </span>
-        <h1 className="font-outfit text-2xl sm:text-4xl md:text-5xl font-black mt-2">Offers & Launch Cashback</h1>
+        <h1 className="font-outfit text-2xl sm:text-4xl md:text-5xl font-black mt-2">10% Flat Discount</h1>
         <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-          Earn instant Cafe Coins on your order spend and redeem promo codes at checkout!
+          Apply coupon code <strong className="text-orange-600">BOB10</strong> at checkout for a flat 10% instant discount on every order!
         </p>
       </div>
 
-      {/* CAFE COINS LAUNCH OFFER TABLE */}
-      <section className="rounded-3xl border border-amber-500/40 bg-zinc-950 p-5 sm:p-8 text-white shadow-2xl space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800 pb-4">
+      {/* 10% FLAT DISCOUNT HERO - WARM CLEAN THEME */}
+      <section className="rounded-3xl border-2 border-orange-200 bg-gradient-to-br from-orange-50/90 via-amber-50/50 to-white p-5 sm:p-8 text-slate-900 shadow-xl space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-orange-200/60 pb-4">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-amber-400">Cafe Coins — Launch Offer (50% Cashback)</h2>
-            <p className="text-xs text-zinc-400">Earn coins automatically on every order value tier!</p>
+            <span className="rounded-full bg-orange-500/10 text-orange-600 border border-orange-500/30 px-3 py-0.5 text-[11px] font-black uppercase inline-block mb-1.5">
+              Active Offer
+            </span>
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900">10% Flat Discount — On Every Order</h2>
+            <p className="text-xs text-slate-600 font-medium mt-0.5">No minimum order value. Valid on all flame-grilled burgers, rolls & snack packs. Apply coupon BOB10!</p>
           </div>
-          <span className="rounded-full bg-amber-500/20 text-amber-300 px-3 py-1 text-xs font-black uppercase border border-amber-500/30 self-start sm:self-auto">
-            Official Cashback Table
+          <span className="rounded-full bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 px-3 py-1 text-xs font-black uppercase self-start sm:self-auto shadow-2xs">
+            ● Active Now
           </span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs sm:text-sm">
-            <thead>
-              <tr className="border-b border-zinc-800 text-zinc-400 uppercase text-[11px] font-bold">
-                <th className="py-3 px-2">Spend (Order Value)</th>
-                <th className="py-3 px-2 text-amber-400 font-black">Coins You Get</th>
-                <th className="py-3 px-2 text-zinc-300">Coins Usable On Next Order Above</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800/60 font-semibold">
-              <tr className="hover:bg-zinc-900/50">
-                <td className="py-3.5 px-2 font-bold text-white">₹200</td>
-                <td className="py-3.5 px-2 text-amber-400 font-black text-base">₹100</td>
-                <td className="py-3.5 px-2 text-zinc-300">₹500</td>
-              </tr>
-              <tr className="hover:bg-zinc-900/50">
-                <td className="py-3.5 px-2 font-bold text-white">₹300</td>
-                <td className="py-3.5 px-2 text-amber-400 font-black text-base">₹150</td>
-                <td className="py-3.5 px-2 text-zinc-300">₹500</td>
-              </tr>
-              <tr className="hover:bg-zinc-900/50">
-                <td className="py-3.5 px-2 font-bold text-white">₹500</td>
-                <td className="py-3.5 px-2 text-amber-400 font-black text-base">₹250</td>
-                <td className="py-3.5 px-2 text-zinc-300">₹700</td>
-              </tr>
-              <tr className="hover:bg-zinc-900/50">
-                <td className="py-3.5 px-2 font-bold text-white">₹700</td>
-                <td className="py-3.5 px-2 text-amber-400 font-black text-base">₹350</td>
-                <td className="py-3.5 px-2 text-zinc-300">₹900</td>
-              </tr>
-              <tr className="hover:bg-zinc-900/50">
-                <td className="py-3.5 px-2 font-bold text-white">₹999+</td>
-                <td className="py-3.5 px-2 text-amber-400 font-black text-base">₹500</td>
-                <td className="py-3.5 px-2 text-zinc-300">₹1200</td>
-              </tr>
-            </tbody>
-          </table>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl bg-white/90 border border-orange-200/70 p-5 text-center space-y-1.5 shadow-2xs">
+            <p className="text-3xl font-black text-orange-600">10%</p>
+            <p className="text-xs text-slate-700 font-bold">Flat Instant Discount</p>
+          </div>
+          <div className="rounded-2xl bg-white/90 border border-orange-200/70 p-5 text-center space-y-1.5 shadow-2xs">
+            <p className="text-3xl font-black text-emerald-600">₹0</p>
+            <p className="text-xs text-slate-700 font-bold">No Minimum Order</p>
+          </div>
+          <div className="rounded-2xl bg-white/90 border border-orange-200/70 p-5 text-center space-y-1.5 shadow-2xs">
+            <p className="text-3xl font-black text-amber-600">∞</p>
+            <p className="text-xs text-slate-700 font-bold">Unlimited Usage</p>
+          </div>
         </div>
 
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-zinc-400">Coins are automatically calculated & credited to your profile upon order confirmation.</p>
-          <button onClick={() => setView('menu')} className="rounded-full bg-orange-500 px-6 py-2.5 text-xs font-black text-white hover:bg-orange-600 cursor-pointer shadow-md">
-            Order & Earn Coins Now →
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-orange-200/60">
+          <p className="text-xs text-slate-600 font-medium">Use coupon code <strong className="text-orange-600 font-black">BOB10</strong> at checkout to claim your 10% discount.</p>
+          <button onClick={() => setView('menu')} className="rounded-full bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-2.5 text-xs font-black text-white hover:opacity-95 cursor-pointer shadow-md transition-all shrink-0">
+            Order Now & Save 10% →
           </button>
         </div>
       </section>
@@ -1661,26 +1633,26 @@ function ContactView({ setView }: { setView: (v: ViewType) => void }) {
             </div>
           </div>
 
-          {/* Instagram card */}
-          <div className="rounded-3xl border border-border bg-card p-5 sm:p-6 shadow-sm space-y-3">
+          {/* FSSAI Registration Card */}
+          <div className="rounded-3xl border border-orange-200 bg-orange-50/60 p-5 sm:p-6 shadow-sm space-y-2.5">
             <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-600 font-bold">
-                📸
+              <div className="flex size-10 items-center justify-center rounded-2xl bg-orange-500 text-white font-bold">
+                <ShieldCheck size={22} />
               </div>
               <div>
-                <h3 className="font-outfit text-base sm:text-lg font-black text-foreground">Official Instagram</h3>
-                <p className="text-xs text-muted-foreground">Follow @bobs_satellite_kitchen</p>
+                <h3 className="font-outfit text-base sm:text-lg font-black text-slate-900">FSSAI Certified Kitchen</h3>
+                <p className="text-xs text-slate-500">Government of Karnataka Food Safety Authority</p>
               </div>
             </div>
-            <a
-              href="https://www.instagram.com/bobs_satellite_kitchen?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==&igsi=ZDNlZDc0MzIxNw=="
-              target="_blank"
-              rel="noreferrer"
-              className="w-full rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 py-3 text-xs font-black text-white text-center shadow-lg hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>Follow on Instagram</span>
-              <ExternalLink size={14} />
-            </a>
+            <p className="font-mono text-sm font-black text-orange-600">
+              Registration No: 21226188004151
+            </p>
+            <p className="text-xs text-slate-600">
+              1067, 8th Main Rd, Kaveri Layout, Mahadevapura, B.B.M.P East, Karnataka - 560037 (Near LAGNAM designer studio)
+            </p>
+            <p className="text-[11px] text-emerald-700 font-bold">
+              ✓ 100% Food Safety Compliant · Valid up to 18-08-2027
+            </p>
           </div>
         </div>
       </div>
@@ -1776,8 +1748,8 @@ function StoryView() {
         </div>
         <div className="rounded-2xl border p-4 bg-card">
           <p className="font-black text-orange-500 text-lg">03</p>
-          <h4 className="font-bold text-sm mt-1">UPI Instant Scan</h4>
-          <p className="text-xs text-muted-foreground mt-1">Smooth QR payments with instant transaction ID tracking.</p>
+          <h4 className="font-bold text-sm mt-1">FSSAI Certified</h4>
+          <p className="text-xs text-muted-foreground mt-1 font-mono">Lic. 21226188004151 · 100% compliant food safety hygiene.</p>
         </div>
       </div>
     </motion.main>
@@ -1852,6 +1824,16 @@ function Checkout({
   const [isCompleted, setIsCompleted] = useState(false)
   const [placedId, setPlacedId] = useState('')
 
+  // Dynamic QR Payment State
+  const [qrDataUrl, setQrDataUrl] = useState<string>('')
+  const [qrOrderId, setQrOrderId] = useState<string>('')
+  const [qrUpiUri, setQrUpiUri] = useState<string>('')
+  const [timerSeconds, setTimerSeconds] = useState(PAYMENT_TIMEOUT_SECONDS)
+  const [isTimerActive, setIsTimerActive] = useState(false)
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'waiting' | 'paid' | 'expired'>('idle')
+  const pollingRef = useRef<NodeJS.Timeout | null>(null)
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
+
   // Guest input state if not logged in
   const [guestName, setGuestName] = useState('')
   const [guestPhone, setGuestPhone] = useState('')
@@ -1875,23 +1857,128 @@ function Checkout({
   const estimatedDist = 1.2 // defaults near Marathahalli
   const isOutside3km = orderMode === 'Delivery' && estimatedDist > 3.0
 
+  // Generate dynamic QR code
+  const generatePaymentQR = useCallback(async () => {
+    if (total <= 0) return
+    const orderId = generateOrderId()
+    setQrOrderId(orderId)
+    const upiUri = generateUpiUri(total, orderId)
+    setQrUpiUri(upiUri)
+    
+    try {
+      const dataUrl = await QRCode.toDataURL(upiUri, {
+        width: 280,
+        margin: 2,
+        color: { dark: '#000000', light: '#ffffff' },
+        errorCorrectionLevel: 'M',
+      })
+      setQrDataUrl(dataUrl)
+
+      // Create order in Supabase as PENDING
+      await supabase.from('orders').insert({
+        order_id: orderId,
+        amount: total,
+        status: 'PENDING',
+        customer_name: user?.name || guestName || 'Guest',
+        customer_phone: user?.phone || guestPhone || '',
+        customer_email: user?.email || guestEmail || '',
+        delivery_address: activeAddr,
+        order_mode: orderMode,
+        items: cart.map(i => ({ id: i.id, name: i.name, qty: i.quantity, price: i.price })),
+        expires_at: new Date(Date.now() + PAYMENT_TIMEOUT_SECONDS * 1000).toISOString(),
+      })
+
+      // Start 3-minute countdown timer
+      setTimerSeconds(PAYMENT_TIMEOUT_SECONDS)
+      setIsTimerActive(true)
+      setPaymentStatus('waiting')
+
+    } catch (err) {
+      console.error('QR generation error:', err)
+      toast.error('Failed to generate QR code')
+    }
+  }, [total, user, guestName, guestPhone, guestEmail, activeAddr, orderMode, cart])
+
+  // Timer countdown
+  useEffect(() => {
+    if (!isTimerActive) return
+    timerRef.current = setInterval(() => {
+      setTimerSeconds(prev => {
+        if (prev <= 1) {
+          setIsTimerActive(false)
+          setPaymentStatus('expired')
+          if (pollingRef.current) clearInterval(pollingRef.current)
+          // Mark order as expired in Supabase
+          if (qrOrderId) {
+            supabase.from('orders').update({ status: 'EXPIRED' }).eq('order_id', qrOrderId)
+          }
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+  }, [isTimerActive, qrOrderId])
+
+  // Poll payment status every 4 seconds
+  useEffect(() => {
+    if (paymentStatus !== 'waiting' || !qrOrderId) return
+    pollingRef.current = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/check-payment-status?order_id=${qrOrderId}`)
+        const data = await res.json()
+        if (data.status === 'PAID') {
+          setPaymentStatus('paid')
+          setIsTimerActive(false)
+          if (pollingRef.current) clearInterval(pollingRef.current)
+          if (timerRef.current) clearInterval(timerRef.current)
+          setUpiTransactionId(data.upi_transaction_id || qrOrderId)
+          toast.success('Payment verified! Confirming your order... 🎉')
+          // Auto-confirm order
+          setTimeout(() => {
+            handleConfirmOrder(qrOrderId, data.upi_transaction_id || '')
+          }, 1000)
+        }
+      } catch {
+        // Polling error - ignore and retry
+      }
+    }, PAYMENT_POLL_INTERVAL_MS)
+    return () => { if (pollingRef.current) clearInterval(pollingRef.current) }
+  }, [paymentStatus, qrOrderId])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current)
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [])
+
+  // Regenerate QR when payment method is UPI and total changes
+  useEffect(() => {
+    if (paymentMethod === 'upi' && total > 0 && paymentStatus === 'idle') {
+      generatePaymentQR()
+    }
+  }, [paymentMethod, total])
+
   const handleApplyCoupon = (codeToApply?: string) => {
     const code = (codeToApply || coupon).trim().toUpperCase()
-    if (code === 'BOB20' || code === 'SWIGGY20') {
-      const disc = Math.round(subtotal * 0.2)
+    if (code === 'BOB10') {
+      const disc = Math.round(subtotal * 0.1)
       setDiscount(disc)
-      toast.success(`Coupon ${code} applied! Saved ₹${disc} 🎉`)
-    } else if (code === 'MARATHAHALLI') {
-      setDiscount(deliveryFee > 0 ? deliveryFee : 20)
-      toast.success('Marathahalli Free Delivery coupon applied! 🎉')
-    } else if (code === 'CAFE50') {
-      toast.success(`50% Cashback offer active! You'll earn ₹${earnedCoins} Cafe Coins. 🪙`)
+      toast.success(`Coupon BOB10 applied! Saved ₹${disc} (10% off) 🎉`)
     } else {
-      toast.error('Invalid coupon code. Try "BOB20"')
+      toast.error('Invalid coupon code. Try "BOB10" for 10% flat discount')
     }
   }
 
-  const handleConfirmOrder = () => {
+  const formatTimer = (seconds: number) => {
+    const m = Math.floor(seconds / 60)
+    const s = seconds % 60
+    return `${m}:${s.toString().padStart(2, '0')}`
+  }
+
+  const handleConfirmOrder = (overrideOrderId?: string, overrideTxnId?: string) => {
     if (cart.length === 0) return toast.error('Your basket is empty!')
 
     // Validate phone number
@@ -1908,13 +1995,8 @@ function Checkout({
       return toast.error('Email ID is required for delivery receipts!')
     }
 
-    // UPI Transaction ID validation: Last 5 digits required
-    if (paymentMethod === 'upi') {
-      const trimmedTxn = upiTransactionId.trim()
-      if (!trimmedTxn || trimmedTxn.length < 4) {
-        return toast.error('Please enter the last 5 digits of your UPI Transaction ID / UTR!')
-      }
-    }
+    // For UPI: auto-detected via PipraPay or default generated reference
+    const finalTxnId = overrideTxnId || upiTransactionId.trim() || qrOrderId || `BSK-UPI-${Date.now().toString().slice(-6)}`
 
     // Auto-register user if not logged in
     if (!user && saveAccount && finalPhone) {
@@ -1934,13 +2016,22 @@ function Checkout({
       customerName: finalName,
       customerPhone: finalPhone,
       customerEmail: finalEmail,
-      paymentMethod: paymentMethod === 'upi' ? 'UPI QR Instant' : paymentMethod === 'card' ? 'Credit/Debit Card' : 'Cash on Delivery',
-      transactionId: paymentMethod === 'upi' ? upiTransactionId.trim() : undefined,
+      paymentMethod: paymentMethod === 'upi' ? 'UPI QR Instant (PipraPay)' : paymentMethod === 'card' ? 'Credit/Debit Card' : 'Cash on Delivery',
+      transactionId: finalTxnId || (overrideOrderId || undefined),
       discount,
       appliedCoupon: coupon,
       coinsEarned: earnedCoins,
       distanceKm: estimatedDist,
     })
+
+    // Update Supabase order status
+    if (overrideOrderId || qrOrderId) {
+      supabase.from('orders').update({ status: 'PAID' }).eq('order_id', overrideOrderId || qrOrderId)
+    }
+
+    // Cleanup timers
+    if (pollingRef.current) clearInterval(pollingRef.current)
+    if (timerRef.current) clearInterval(timerRef.current)
 
     setPlacedId(id)
     setIsCompleted(true)
@@ -1963,16 +2054,13 @@ function Checkout({
           </p>
 
           <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200 text-left text-xs space-y-2 font-outfit">
-            <p className="font-bold text-slate-700">📍 Mode: <span className="text-orange-600 font-extrabold">{orderMode}</span></p>
-            <p className="font-bold text-slate-700 truncate">🗺️ Address: <span className="text-slate-900 font-bold">{orderMode === 'Dining in' ? selectedTable : activeAddr}</span></p>
-            <p className="font-bold text-slate-700">💳 Payment: <span className="uppercase text-slate-900 font-extrabold">{paymentMethod}</span></p>
+            <p className="font-bold text-slate-700">Mode: <span className="text-orange-600 font-extrabold">{orderMode}</span></p>
+            <p className="font-bold text-slate-700 truncate">Address: <span className="text-slate-900 font-bold">{orderMode === 'Takeaway' ? 'Takeaway Pickup · Kaveri Layout Outlet' : activeAddr}</span></p>
+            <p className="font-bold text-slate-700">Payment Method: <span className="uppercase text-slate-900 font-extrabold">{paymentMethod}</span></p>
             {upiTransactionId && (
-              <p className="font-bold text-slate-700">🔖 UPI Ref: <span className="font-mono text-emerald-600 font-bold">#{upiTransactionId}</span></p>
+              <p className="font-bold text-slate-700">UPI Ref / UTR: <span className="font-mono text-emerald-600 font-bold">{upiTransactionId}</span></p>
             )}
-            {earnedCoins > 0 && (
-              <p className="font-bold text-amber-600">🪙 Cafe Coins Earned: <span className="font-black">+{earnedCoins} Coins</span></p>
-            )}
-            <p className="font-bold text-slate-700 pt-1 border-t border-slate-200">💰 Total Paid: <span className="font-black text-slate-900 text-sm">{formatPrice(total)}</span></p>
+            <p className="font-bold text-slate-700 pt-1 border-t border-slate-200">Total Paid: <span className="font-black text-slate-900 text-sm">{formatPrice(total)}</span></p>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -2148,40 +2236,31 @@ function Checkout({
                 </div>
               </div>
 
-              {/* Mode Switcher */}
-              <div className="grid grid-cols-3 gap-2 rounded-2xl bg-slate-100 p-1.5 border border-slate-200 font-outfit">
+              {/* Mode Switcher - Delivery or Takeaway only */}
+              <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1.5 border border-slate-200 font-outfit">
                 <button
                   type="button"
                   onClick={() => setOrderModeState('Delivery')}
-                  className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-black transition-all cursor-pointer ${
+                  className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-black transition-all cursor-pointer ${
                     orderMode === 'Delivery'
                       ? 'bg-orange-500 text-white shadow-sm'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Bike size={15} /> Delivery 🛵
+                  <Bike size={16} />
+                  <span>Delivery</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setOrderModeState('Takeaway')}
-                  className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-black transition-all cursor-pointer ${
+                  className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-black transition-all cursor-pointer ${
                     orderMode === 'Takeaway'
                       ? 'bg-orange-500 text-white shadow-sm'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Package size={15} /> Takeaway 🛍️
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOrderModeState('Dining in')}
-                  className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-black transition-all cursor-pointer ${
-                    orderMode === 'Dining in'
-                      ? 'bg-orange-500 text-white shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <Utensils size={15} /> Dining In 🍽️
+                  <Package size={16} />
+                  <span>Takeaway</span>
                 </button>
               </div>
 
@@ -2190,13 +2269,13 @@ function Checkout({
                   <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-2 text-xs">
                     <div className="flex items-center justify-between">
                       <span className="font-black text-slate-900 uppercase text-[10px] tracking-wider font-outfit">Selected Delivery Address</span>
-                      <button onClick={onOpenPermissions} className="text-orange-600 font-bold hover:underline cursor-pointer">Change Pin 📍</button>
+                      <button onClick={onOpenPermissions} className="text-orange-600 font-bold hover:underline cursor-pointer">Change Pin</button>
                     </div>
                     <p className="font-bold text-slate-900 leading-relaxed text-xs sm:text-sm font-outfit">
                       {activeAddr}
                     </p>
                     <div className="flex items-center justify-between pt-1 border-t border-slate-200 text-[11px] text-slate-500">
-                      <span>⚡ Marathahalli Central Kitchen Dispatch</span>
+                      <span>Marathahalli Central Kitchen Dispatch</span>
                       <span className="text-emerald-600 font-bold">Within 3 km Radius ✓</span>
                     </div>
                   </div>
@@ -2221,53 +2300,31 @@ function Checkout({
                 <div className="rounded-2xl border border-orange-500/30 bg-orange-500/5 p-4 text-xs space-y-1.5 font-outfit">
                   <p className="font-bold text-orange-700 text-sm">Self Pickup at Base Outlet</p>
                   <p className="text-slate-600">
-                    📍 <strong>1067, 8th Main Rd, Kaveri Layout, Marathahalli Village, Bengaluru (560037)</strong>
+                    <strong>1067, 8th Main Rd, Kaveri Layout, Marathahalli Village, Bengaluru (560037)</strong>
                   </p>
                   <p className="text-slate-500 text-[11px]">Your meal will be packed piping hot in 15 mins. No delivery fee charged!</p>
                 </div>
               )}
-
-              {orderMode === 'Dining in' && (
-                <div className="space-y-2.5">
-                  <p className="text-xs font-bold text-slate-700">Select Table Number for Dining-In Service:</p>
-                  <div className="grid grid-cols-4 gap-2">
-                    {['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Table 5', 'Table 6', 'Table 7', 'Table 8'].map((tbl) => (
-                      <button
-                        key={tbl}
-                        type="button"
-                        onClick={() => setSelectedTable(tbl)}
-                        className={`rounded-xl border p-2.5 text-xs font-black transition-all cursor-pointer ${
-                          selectedTable === tbl
-                            ? 'border-orange-500 bg-orange-500 text-white shadow-xs'
-                            : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
-                        }`}
-                      >
-                        {tbl}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
-            {/* STEP 3: PAYMENT METHOD (UPI SCANNER WITH 5-DIGIT TRANSACTION ID) */}
+            {/* STEP 3: PAYMENT METHOD */}
             <div className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm space-y-4 font-outfit">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white font-black text-xs">
                   <CreditCard size={18} />
                 </div>
                 <div>
-                  <h3 className="font-outfit text-base sm:text-lg font-black text-slate-900">3. Payment Option & UPI QR Scanner</h3>
-                  <p className="text-xs text-slate-500">Scan UPI QR & enter last 5 digits of Transaction ID</p>
+                  <h3 className="font-outfit text-base sm:text-lg font-black text-slate-900">3. Payment Option</h3>
+                  <p className="text-xs text-slate-500">Scan dynamic UPI QR or choose Pay on Delivery</p>
                 </div>
               </div>
 
               {/* Payment Selector */}
               <div className="space-y-2.5">
                 {[
-                  { id: 'upi', title: 'UPI Instant Scan & Pay (GPay / PhonePe / Paytm)', desc: 'Scan official QR code & add transaction ID', badge: 'Recommended' },
-                  { id: 'card', title: 'Credit & Debit Cards', desc: 'Visa, Mastercard, RuPay & Diner Club' },
-                  { id: 'cod', title: orderMode === 'Dining in' ? 'Pay at Counter' : 'Cash on Delivery (COD)', desc: 'Pay after receiving order' },
+                  { id: 'upi', title: 'UPI Instant Scan & Pay (GPay / PhonePe / Paytm)', desc: 'Scan dynamic QR code · Auto-verified via PipraPay', badge: 'Recommended' },
+                  { id: 'card', title: 'Credit & Debit Cards', desc: 'Visa, Mastercard, RuPay & Diners Club' },
+                  { id: 'cod', title: 'Cash on Delivery (COD) / Pay on Pickup', desc: 'Pay after receiving your order' },
                 ].map((pm) => (
                   <label
                     key={pm.id}
@@ -2299,64 +2356,155 @@ function Checkout({
                 ))}
               </div>
 
-              {/* DEDICATED UPI SCANNER & 5-DIGIT TRANSACTION ID INPUT */}
+              {/* ENHANCED WARM DYNAMIC UPI QR PAYMENT CARD */}
               {paymentMethod === 'upi' && (
-                <div className="rounded-3xl border border-orange-500/40 bg-zinc-950 p-5 text-white shadow-xl space-y-4 animate-in fade-in">
-                  <div className="flex flex-col sm:flex-row items-center gap-4 border-b border-zinc-800 pb-4">
-                    {/* UPI QR SCANNER IMAGE */}
-                    <div className="relative size-36 sm:size-40 rounded-2xl overflow-hidden bg-white p-1.5 shrink-0 shadow-lg border-2 border-orange-500">
-                      <img 
-                        src="/upi.jpeg" 
-                        alt="Bob's Kitchen UPI Scanner" 
-                        className="size-full object-contain"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5 text-center sm:text-left flex-1">
-                      <span className="rounded-full bg-orange-500/20 text-orange-400 px-2.5 py-0.5 text-[10px] font-black uppercase border border-orange-500/30">
-                        Scan with any UPI App
-                      </span>
-                      <h4 className="text-base font-black text-white">Bob's Satellite Kitchen</h4>
-                      <p className="text-xs text-zinc-400">Payable Amount: <strong className="text-orange-400 text-sm font-black">{formatPrice(total)}</strong></p>
-                      <div className="flex items-center justify-center sm:justify-start gap-1 text-xs">
-                        <span className="font-mono text-zinc-300 bg-zinc-800 px-2 py-0.5 rounded">9550764604@upi</span>
-                        <button 
-                          type="button" 
-                          onClick={() => { navigator.clipboard?.writeText?.('9550764604@upi'); toast.success('UPI ID copied!'); }} 
-                          className="text-orange-400 hover:text-white text-[11px] font-bold underline"
-                        >
-                          Copy
-                        </button>
+                <div className="rounded-3xl border-2 border-orange-200/90 bg-gradient-to-br from-orange-50/70 via-amber-50/40 to-white p-5 sm:p-6 text-slate-900 shadow-md space-y-5 animate-in fade-in">
+                  
+                  {/* Timer Bar */}
+                  {paymentStatus === 'waiting' && (
+                    <div className="rounded-2xl bg-white/90 border border-orange-200/80 p-3.5 space-y-2 shadow-2xs">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="flex items-center gap-1.5 text-orange-600 font-extrabold">
+                          <Clock size={14} className="animate-pulse text-orange-500" />
+                          <span>Payment Window Active</span>
+                        </span>
+                        <span className={`font-mono font-black text-base px-2.5 py-0.5 rounded-lg ${
+                          timerSeconds <= 30
+                            ? 'bg-rose-100 text-rose-700 animate-pulse'
+                            : timerSeconds <= 60
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-emerald-100 text-emerald-700'
+                        }`}>
+                          {formatTimer(timerSeconds)}
+                        </span>
+                      </div>
+                      <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                        <div 
+                          className={`h-full rounded-full transition-all duration-1000 ${
+                            timerSeconds <= 30 ? 'bg-rose-500' : timerSeconds <= 60 ? 'bg-amber-500' : 'bg-emerald-500'
+                          }`}
+                          style={{ width: `${(timerSeconds / PAYMENT_TIMEOUT_SECONDS) * 100}%` }}
+                        />
                       </div>
                     </div>
-                  </div>
+                  )}
 
-                  {/* LAST 5 DIGIT TRANSACTION ID INPUT */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-white block">
-                      Enter Last 5 Digits of UPI Transaction ID / UTR (Mandatory *)
-                    </label>
-                    <input
-                      value={upiTransactionId}
-                      onChange={(e) => setUpiTransactionId(e.target.value)}
-                      placeholder="e.g. 84920"
-                      maxLength={12}
-                      className="w-full rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm font-mono text-white placeholder-zinc-500 focus:border-orange-500 focus:outline-none"
-                    />
-                    <p className="text-[11px] text-zinc-400">
-                      💡 Found on your GPay / PhonePe / Paytm payment receipt as UPI Ref No / Transaction ID.
-                    </p>
-                  </div>
+                  {/* Payment Status Badges */}
+                  {paymentStatus === 'paid' && (
+                    <div className="rounded-2xl bg-emerald-50 border-2 border-emerald-300 p-4 flex items-center gap-3 text-emerald-900 shadow-xs">
+                      <div className="h-10 w-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                        <CheckCircle2 size={24} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-black text-emerald-800">Payment Successfully Verified! 🎉</p>
+                        <p className="text-xs text-emerald-700">PipraPay detected your UPI transaction. Confirming order...</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {paymentStatus === 'expired' && (
+                    <div className="rounded-2xl bg-rose-50 border-2 border-rose-200 p-4 space-y-3 text-rose-900">
+                      <div className="flex items-center gap-3">
+                        <AlertTriangle size={24} className="text-rose-600 shrink-0" />
+                        <div>
+                          <p className="text-sm font-black text-rose-800">QR Code Expired</p>
+                          <p className="text-xs text-rose-600">The 3-minute payment window elapsed. Generate a fresh QR code to proceed.</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => { setPaymentStatus('idle'); generatePaymentQR(); }}
+                        className="w-full rounded-xl bg-orange-500 hover:bg-orange-600 py-2.5 text-xs font-black text-white shadow-sm cursor-pointer transition-all"
+                      >
+                        Generate Fresh QR Code →
+                      </button>
+                    </div>
+                  )}
+
+                  {/* QR Code Presentation Box */}
+                  {paymentStatus !== 'expired' && (
+                    <div className="rounded-2xl bg-white border border-orange-200/80 p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-center gap-5">
+                      
+                      {/* DYNAMIC QR CODE WITH WARM ACCENT FRAME */}
+                      <div className="relative size-44 sm:size-48 rounded-2xl bg-white p-2.5 shrink-0 shadow-md border-2 border-orange-400 flex items-center justify-center">
+                        {qrDataUrl ? (
+                          <img 
+                            src={qrDataUrl} 
+                            alt={`UPI QR for ${qrOrderId}`} 
+                            className="size-full object-contain"
+                          />
+                        ) : (
+                          <div className="size-full flex flex-col items-center justify-center text-slate-400 text-xs font-bold gap-2 animate-pulse">
+                            <RefreshCw size={20} className="animate-spin text-orange-500" />
+                            <span>Generating QR...</span>
+                          </div>
+                        )}
+                        {paymentStatus === 'waiting' && (
+                          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-emerald-600 px-3 py-0.5 text-[9px] font-black text-white shadow-sm whitespace-nowrap flex items-center gap-1 animate-pulse">
+                            <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
+                            <span>Live Auto-Detection</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Payee Info & Quick Actions */}
+                      <div className="space-y-2.5 text-center sm:text-left flex-1">
+                        <div>
+                          <span className="rounded-full bg-orange-500/10 text-orange-600 border border-orange-500/30 px-2.5 py-0.5 text-[10px] font-black uppercase inline-block">
+                            Scan with Any UPI App
+                          </span>
+                          <h4 className="text-base font-black text-slate-900 mt-1">Bob&apos;s Satellite Kitchen</h4>
+                          <p className="text-xs text-slate-500 font-medium">
+                            Payable Amount: <strong className="text-orange-600 text-base font-black">{formatPrice(total)}</strong>
+                          </p>
+                          <p className="text-[11px] text-slate-400 font-mono mt-0.5">
+                            Order ID: <span className="font-bold text-slate-700">{qrOrderId}</span>
+                          </p>
+                        </div>
+
+                        {/* UPI ID with 1-click Copy */}
+                        <div className="inline-flex items-center justify-center sm:justify-start gap-1.5 bg-slate-100/90 border border-slate-200/80 px-3 py-1.5 rounded-xl text-xs">
+                          <span className="font-mono text-slate-700 font-bold text-[11px]">{UPI_CONFIG.vpa}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => { navigator.clipboard?.writeText?.(UPI_CONFIG.vpa); toast.success('UPI ID copied!'); }} 
+                            className="text-orange-600 hover:text-orange-700 font-extrabold text-[11px] ml-1 cursor-pointer"
+                          >
+                            Copy
+                          </button>
+                        </div>
+
+                        {/* Deep link button to launch UPI app on mobile */}
+                        {qrUpiUri && (
+                          <div>
+                            <a 
+                              href={qrUpiUri}
+                              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2 text-xs font-black text-white hover:opacity-95 shadow-sm transition-all cursor-pointer"
+                            >
+                              <Zap size={13} />
+                              <span>Open GPay / PhonePe / Paytm →</span>
+                            </a>
+                          </div>
+                        )}
+
+                        <p className="text-[11px] text-slate-500 font-medium leading-tight">
+                          ✨ Just scan &amp; complete payment. PipraPay will automatically verify and confirm your meal!
+                        </p>
+                      </div>
+
+                    </div>
+                  )}
+
                 </div>
               )}
 
               {/* CONFIRM ORDER BUTTON */}
               <button
-                onClick={handleConfirmOrder}
-                disabled={cart.length === 0}
+                onClick={() => handleConfirmOrder()}
+                disabled={cart.length === 0 || (paymentMethod === 'upi' && paymentStatus === 'expired')}
                 className="w-full rounded-2xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 py-4 text-sm font-black text-white shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50"
               >
-                PAY {formatPrice(total)} & CONFIRM ORDER →
+                {paymentStatus === 'paid' ? '✅ PAYMENT VERIFIED — CONFIRM ORDER' : `PAY ${formatPrice(total)} & CONFIRM ORDER →`}
               </button>
             </div>
 
@@ -2405,15 +2553,6 @@ function Checkout({
               )}
 
               {/* CAFE COINS CASHBACK NOTIFICATION */}
-              {earnedCoins > 0 && (
-                <div className="rounded-2xl bg-amber-500/10 border border-amber-500/30 p-3 text-xs text-amber-700 flex items-center gap-2">
-                  <span className="text-lg">🪙</span>
-                  <div>
-                    <p className="font-black">You will earn ₹{earnedCoins} Cafe Coins!</p>
-                    <p className="text-[10px] text-amber-600">50% cashback credited upon order placement.</p>
-                  </div>
-                </div>
-              )}
 
               {/* Coupon Box */}
               <div className="space-y-2">
@@ -2421,12 +2560,12 @@ function Checkout({
                   <input
                     value={coupon}
                     onChange={(e) => setCoupon(e.target.value)}
-                    placeholder="Enter Coupon (e.g. BOB20)"
+                    placeholder="Enter Coupon (e.g. BOB10)"
                     className="flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs uppercase font-bold text-slate-900 focus:border-orange-500 focus:outline-none"
                   />
                   <button
                     onClick={() => handleApplyCoupon()}
-                    className="rounded-2xl bg-slate-900 px-4 py-2 text-xs font-black text-white hover:bg-black transition-all cursor-pointer"
+                    className="rounded-2xl bg-orange-500 px-4 py-2 text-xs font-black text-white hover:bg-orange-600 shadow-xs transition-all cursor-pointer"
                   >
                     Apply
                   </button>
@@ -2434,11 +2573,8 @@ function Checkout({
 
                 {/* Quick Offer Tags */}
                 <div className="flex flex-wrap gap-1.5 text-[10px] font-bold">
-                  <button onClick={() => handleApplyCoupon('BOB20')} className="rounded-lg bg-slate-100 text-slate-700 px-2 py-1 hover:bg-orange-500/10 hover:text-orange-600">
-                    🏷️ BOB20 (20% OFF)
-                  </button>
-                  <button onClick={() => handleApplyCoupon('MARATHAHALLI')} className="rounded-lg bg-slate-100 text-slate-700 px-2 py-1 hover:bg-orange-500/10 hover:text-orange-600">
-                    🚚 MARATHAHALLI (FREE DEL)
+                  <button onClick={() => handleApplyCoupon('BOB10')} className="rounded-lg bg-orange-500/10 text-orange-600 border border-orange-500/20 px-2 py-1 hover:bg-orange-500/20 cursor-pointer">
+                    🔥 BOB10 (10% FLAT OFF)
                   </button>
                 </div>
               </div>
@@ -2635,7 +2771,7 @@ export function RestaurantApp({ onAccount }: { onAccount: () => void }) {
                 className="absolute left-0 top-0 flex h-full w-[80vw] sm:w-[60vw] md:w-[45vw] max-w-sm flex-col bg-background text-foreground shadow-2xl border-r border-border font-outfit justify-between"
               >
                 <div>
-                  <div className="relative border-b border-border bg-gradient-to-br from-neutral-900 via-neutral-950 to-orange-950 p-4 text-white">
+                  <div className="relative border-b border-orange-200 bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 p-4 text-white">
                     <button 
                       onClick={() => setMobileOpen(false)} 
                       className="absolute right-3 top-3 rounded-full p-1.5 text-white/70 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
@@ -2739,15 +2875,22 @@ export function RestaurantApp({ onAccount }: { onAccount: () => void }) {
           </div>
 
           <div>
-            <h4 className="font-extrabold text-xs uppercase tracking-wider text-foreground mb-2.5">Location & Contact</h4>
-            <p className="text-xs text-muted-foreground">📍 1067, 8th Main Rd, Kaveri Layout, Marathahalli Village, Bengaluru 560037</p>
-            <p className="text-xs text-muted-foreground mt-1">📞 <strong>+91 95507 64604</strong></p>
-            <p className="text-xs font-extrabold text-emerald-600 mt-1">🎉 Strict 3 km Radius · Free Delivery on ₹300+</p>
+            <h4 className="font-extrabold text-xs uppercase tracking-wider text-foreground mb-2.5">Food Safety & Compliance</h4>
+            <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-xs space-y-1">
+              <div className="flex items-center gap-1.5 text-orange-600 font-extrabold">
+                <ShieldCheck size={16} />
+                <span>fssai Certified FBO</span>
+              </div>
+              <p className="text-[11px] font-mono font-bold text-slate-900">Lic. No: 21226188004151</p>
+              <p className="text-[10px] text-muted-foreground">Govt of Karnataka · Valid up to 18-08-2027</p>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">1067, 8th Main Rd, Kaveri Layout, Marathahalli Village, Bengaluru 560037</p>
+            <p className="text-xs text-muted-foreground mt-1">Phone: <strong>+91 95507 64604</strong></p>
           </div>
         </div>
 
         <div className="mx-auto max-w-7xl pt-4 flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-2 text-center">
-          <p>© 2026 BOB'S Satellite Kitchen · All Rights Reserved.</p>
+          <p>© 2026 BOB'S Satellite Kitchen · All Rights Reserved · FSSAI Reg. 21226188004151</p>
           <p className="font-bold">Marathahalli · Bengaluru · Flame-Grilled Gourmet Kitchen</p>
         </div>
       </footer>

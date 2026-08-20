@@ -178,37 +178,46 @@ export function AdminDashboard() {
           </div>
 
           {/* Tab Navigation Buttons */}
-          <nav className="flex items-center gap-1.5 rounded-2xl bg-slate-100 p-1.5 border border-slate-200 overflow-x-auto scrollbar-none">
-            {[
-              { id: 'map', label: 'GPS Delivery Radar', icon: MapPin, badge: activeOrdersCount },
-              { id: 'kds', label: 'Kitchen Queue (KDS)', icon: ChefHat, badge: orders.filter(o => o.status === 'Preparing').length },
-              { id: 'menu', label: 'Menu Control', icon: UtensilsCrossed },
-              { id: 'inventory', label: 'Inventory Hub', icon: Package, badge: lowStockCount > 0 ? lowStockCount : undefined, badgeColor: 'bg-rose-500' },
-              { id: 'analytics', label: 'Revenue Analytics', icon: TrendingUp },
-            ].map((tab) => {
-              const Icon = tab.icon
-              const isActive = activeTab === tab.id
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-black transition-all whitespace-nowrap cursor-pointer ${
-                    isActive
-                      ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md'
-                      : 'text-slate-600 hover:bg-white hover:text-slate-900'
-                  }`}
-                >
-                  <Icon size={16} />
-                  <span>{tab.label}</span>
-                  {tab.badge !== undefined && tab.badge > 0 && (
-                    <span className={`rounded-full ${tab.badgeColor || 'bg-orange-500/30'} text-white px-1.5 py-0.2 text-[10px] font-black`}>
-                      {tab.badge}
-                    </span>
-                  )}
-                </button>
-              )
-            })}
-          </nav>
+          <div className="flex items-center gap-2">
+            <nav className="flex items-center gap-1.5 rounded-2xl bg-slate-100 p-1.5 border border-slate-200 overflow-x-auto scrollbar-none">
+              {[
+                { id: 'map', label: 'GPS Delivery Radar', icon: MapPin, badge: activeOrdersCount },
+                { id: 'kds', label: 'Kitchen Queue (KDS)', icon: ChefHat, badge: orders.filter(o => o.status === 'Preparing').length },
+                { id: 'menu', label: 'Menu Control', icon: UtensilsCrossed },
+                { id: 'inventory', label: 'Inventory Hub', icon: Package, badge: lowStockCount > 0 ? lowStockCount : undefined, badgeColor: 'bg-rose-500' },
+                { id: 'analytics', label: 'Revenue Analytics', icon: TrendingUp },
+              ].map((tab) => {
+                const Icon = tab.icon
+                const isActive = activeTab === tab.id
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-black transition-all whitespace-nowrap cursor-pointer ${
+                      isActive
+                        ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md'
+                        : 'text-slate-600 hover:bg-white hover:text-slate-900'
+                    }`}
+                  >
+                    <Icon size={16} />
+                    <span>{tab.label}</span>
+                    {tab.badge !== undefined && tab.badge > 0 && (
+                      <span className={`rounded-full ${tab.badgeColor || 'bg-orange-500/30'} text-white px-1.5 py-0.2 text-[10px] font-black`}>
+                        {tab.badge}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </nav>
+
+            <a
+              href="/piprapay"
+              className="hidden lg:flex items-center gap-1.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 text-xs font-black shadow-sm transition-all"
+            >
+              <span>🐜 PipraPay Portal</span>
+            </a>
+          </div>
         </div>
       </header>
 
@@ -237,7 +246,7 @@ export function AdminDashboard() {
               </div>
             </div>
             <p className="mt-3 font-outfit text-3xl font-black text-slate-900">{orders.length}</p>
-            <p className="mt-2 text-xs text-slate-500 font-semibold">{orders.filter(o => o.mode === 'Takeaway').length} Delivery · {orders.filter(o => o.mode === 'Dining in').length} Dining-In</p>
+            <p className="mt-2 text-xs text-slate-500 font-semibold">{orders.filter(o => o.mode === 'Delivery').length} Delivery · {orders.filter(o => o.mode === 'Takeaway').length} Takeaway</p>
           </div>
 
           <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -342,7 +351,7 @@ export function AdminDashboard() {
                               </span>
                             )}
                           </div>
-                          <p className="text-[11px] text-slate-500 truncate">📍 {order.mode === 'Dining in' ? order.tableNo : order.deliveryAddress}</p>
+                          <p className="text-[11px] text-slate-500 truncate">{order.deliveryAddress}</p>
                         </div>
 
                         {/* Items Checklist */}
