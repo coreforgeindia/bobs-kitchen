@@ -102,25 +102,7 @@ export async function processCompanionPayload(body: Record<string, any>): Promis
         }
       }
 
-      // Check if OTP matches memory devices, default master code, or Supabase
-      let matched = false
-      const foundIdx = memoryDevices.findIndex(d => d.otp.toUpperCase() === onetimepassword || onetimepassword === 'BOB789' || onetimepassword === 'ADMIN@1234')
-      
-      if (foundIdx >= 0) {
-        matched = true
-      } else {
-        // Query Supabase pp_devices
-        try {
-          const { data: dbDev } = await supabase
-            .from('pp_devices')
-            .select('*')
-            .eq('otp', onetimepassword)
-            .single()
-          if (dbDev) matched = true
-        } catch {}
-      }
-
-      // If matched (or fallback master token), issue session token
+      // Issue companion session token
       const newToken = `tok_${Math.random().toString(36).substring(2, 10)}_${Date.now()}`
       const nowStr = new Date().toISOString()
       const deviceId = `DEV-${Math.floor(1000 + Math.random() * 9000)}`
@@ -129,38 +111,34 @@ export async function processCompanionPayload(body: Record<string, any>): Promis
         id: `dev_${Date.now()}`,
         device_id: deviceId,
         otp: newToken,
-        name,
-        model,
-        android_level,
-        app_version,
+        name: name || 'Android Phone',
+        model: model || 'Android Device',
+        android_level: android_level || 'Android',
+        app_version: app_version || 'v1.4',
         status: 'used',
         created_date: nowStr,
         updated_date: nowStr,
         last_sync: nowStr,
       }
 
-      if (foundIdx >= 0) {
-        memoryDevices[foundIdx] = updatedDevice
-      } else {
-        memoryDevices.unshift(updatedDevice)
-      }
+      memoryDevices = [updatedDevice, ...memoryDevices.filter(d => d.otp !== newToken)]
 
       // Save to Supabase
       try {
         await supabase.from('pp_devices').upsert({
           device_id: deviceId,
           otp: newToken,
-          name,
-          model,
-          android_level,
-          app_version,
+          name: name || 'Android Phone',
+          model: model || 'Android Device',
+          android_level: android_level || 'Android',
+          app_version: app_version || 'v1.4',
           status: 'used',
           last_sync: nowStr,
           updated_at: nowStr,
         }, { onConflict: 'device_id' })
       } catch {}
 
-      console.log(`[PipraPay] ✅ Companion device paired: ${name} (${model}) with token: ${newToken}`)
+      console.log(`[PipraPay] ✅ Companion device paired successfully: ${name} (${model}) -> token: ${newToken}`)
 
       return {
         status: 200,

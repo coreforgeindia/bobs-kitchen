@@ -1220,10 +1220,17 @@ function AuthModal({ open, onClose, onAuthSuccess }: { open: boolean; onClose: (
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 font-sans">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 backdrop-blur-sm cursor-pointer" onClick={onClose} />
       <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }} className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border-2 border-orange-200 bg-white p-5 sm:p-7 text-slate-900 font-outfit shadow-2xl">
-        <button onClick={onClose} className="absolute right-3.5 top-3.5 rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-900 cursor-pointer transition-all">
-          <X size={18} />
+        
+        {/* Prominent Close Button */}
+        <button 
+          type="button" 
+          onClick={(e) => { e.stopPropagation(); onClose(); }} 
+          className="absolute right-3.5 top-3.5 z-20 rounded-full p-2 bg-slate-100 text-slate-600 hover:bg-orange-500 hover:text-white cursor-pointer transition-all shadow-xs"
+          title="Close Modal"
+        >
+          <X size={20} />
         </button>
 
         {/* Header Badge */}
@@ -1455,6 +1462,17 @@ function AuthModal({ open, onClose, onAuthSuccess }: { open: boolean; onClose: (
             </button>
           </form>
         )}
+
+        {/* Global Skip / Cancel Button at bottom */}
+        <div className="mt-4 pt-3 border-t border-slate-100 text-center">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onClose(); }}
+            className="w-full rounded-xl py-2 text-xs font-bold text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors cursor-pointer"
+          >
+            ✕ Skip &amp; Continue Browsing as Guest
+          </button>
+        </div>
       </motion.div>
     </div>
   )

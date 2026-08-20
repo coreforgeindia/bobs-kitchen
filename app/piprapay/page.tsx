@@ -68,11 +68,22 @@ export default function PipraPayDashboard() {
         }
       }
 
-      // 2. Fetch Companion devices & SMS
-      const res = await fetch('/api/piprapay-companion')
-      const compData = await res.json()
-      if (compData.devices) setDevices(compData.devices)
-      if (compData.sms) setSmsList(compData.sms)
+      // 2. Fetch Companion devices & SMS directly from Supabase
+      try {
+        const { data: dbDevs } = await supabase
+          .from('pp_devices')
+          .select('*')
+          .order('created_at', { ascending: false })
+        if (dbDevs && dbDevs.length > 0) setDevices(dbDevs)
+
+        const { data: dbSms } = await supabase
+          .from('pp_sms_data')
+          .select('*')
+          .order('created_at', { ascending: false })
+        if (dbSms && dbSms.length > 0) setSmsList(dbSms)
+      } catch (e) {
+        // Silent catch for local mode
+      }
 
     } catch (err) {
       console.error('Error loading PipraPay data:', err)
