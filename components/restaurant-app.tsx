@@ -1928,19 +1928,41 @@ function Checkout({
     if (paymentStatus !== 'waiting' || !qrOrderId) return
     pollingRef.current = setInterval(async () => {
       try {
-        const res = await fetch(`/api/check-payment-status?order_id=${qrOrderId}`)
-        const data = await res.json()
-        if (data.status === 'PAID') {
+        // Direct Supabase lookup (instant, universal, zero server dependency)
+        const { data: orderData } = await supabase
+          .from('orders')
+          .select('status, upi_transaction_id')
+          .eq('order_id', qrOrderId)
+          .single()
+
+        if (orderData?.status === 'PAID') {
           setPaymentStatus('paid')
           setIsTimerActive(false)
           if (pollingRef.current) clearInterval(pollingRef.current)
           if (timerRef.current) clearInterval(timerRef.current)
-          setUpiTransactionId(data.upi_transaction_id || qrOrderId)
-          toast.success('Payment verified! Confirming your order... 🎉')
-          // Auto-confirm order
+          setUpiTransactionId(orderData.upi_transaction_id || qrOrderId)
+          toast.success('Payment verified! Confirming your order...')
           setTimeout(() => {
-            handleConfirmOrder(qrOrderId, data.upi_transaction_id || '')
+            handleConfirmOrder(qrOrderId, orderData.upi_transaction_id || '')
           }, 1000)
+          return
+        }
+
+        // Fallback to API route if present
+        const res = await fetch(`/api/check-payment-status?order_id=${qrOrderId}`)
+        if (res.ok) {
+          const data = await res.json()
+          if (data.status === 'PAID') {
+            setPaymentStatus('paid')
+            setIsTimerActive(false)
+            if (pollingRef.current) clearInterval(pollingRef.current)
+            if (timerRef.current) clearInterval(timerRef.current)
+            setUpiTransactionId(data.upi_transaction_id || qrOrderId)
+            toast.success('Payment verified! Confirming your order...')
+            setTimeout(() => {
+              handleConfirmOrder(qrOrderId, data.upi_transaction_id || '')
+            }, 1000)
+          }
         }
       } catch {
         // Polling error - ignore and retry
