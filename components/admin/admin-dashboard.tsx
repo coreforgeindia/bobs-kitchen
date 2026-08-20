@@ -161,9 +161,11 @@ export function AdminDashboard() {
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-xl px-4 py-3 sm:px-6 shadow-sm">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 shadow-md shadow-orange-500/20 text-white font-black text-lg">
-              🔥
-            </div>
+            <img
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-8Cr2WCcP9wuThinpGdLL4Uy5dCY9Ri.png"
+              alt="Bob's Satellite Logo"
+              className="size-11 rounded-2xl object-cover ring-2 ring-orange-500/40 shadow-sm"
+            />
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-outfit text-lg sm:text-xl font-black text-slate-900 tracking-wide">
@@ -485,30 +487,54 @@ export function AdminDashboard() {
 
                         {/* Availability Toggle button over image */}
                         <button
-                          onClick={() => toggleItemAvailability(dish.id)}
-                          className={`absolute top-2 right-2 rounded-xl px-2.5 py-1 text-[11px] font-black backdrop-blur-md transition-all cursor-pointer ${
+                          type="button"
+                          onClick={() => {
+                            toggleItemAvailability(dish.id)
+                            toast.success(`${dish.name} marked as ${!isAvailable ? 'In Stock' : 'Out of Stock'}`)
+                          }}
+                          className={`absolute top-2 right-2 rounded-xl px-2.5 py-1 text-[11px] font-black backdrop-blur-md transition-all cursor-pointer shadow-md flex items-center gap-1 ${
                             isAvailable
-                              ? 'bg-emerald-600 text-white'
-                              : 'bg-rose-600 text-white'
+                              ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                              : 'bg-rose-600 text-white hover:bg-rose-700'
                           }`}
                         >
-                          {isAvailable ? 'In Stock' : 'Sold Out'}
+                          <span>{isAvailable ? '✓ In Stock' : '✕ Sold Out'}</span>
                         </button>
                       </div>
 
                       {/* Content */}
-                      <div className="mt-3">
+                      <div className="mt-3 space-y-2">
                         <div className="flex items-start justify-between gap-2">
                           <h3 className="font-outfit text-base font-extrabold text-slate-900">{dish.name}</h3>
                           <span className="font-outfit text-base font-black text-orange-600">
                             {formatPrice(dish.price)}
                           </span>
                         </div>
-                        <p className="mt-1 text-xs text-slate-500 line-clamp-2">{dish.description}</p>
-                        <div className="mt-2 flex items-center gap-3 text-[11px] text-slate-500 font-semibold">
+                        <p className="text-xs text-slate-500 line-clamp-2">{dish.description}</p>
+                        
+                        <div className="flex items-center gap-3 text-[11px] text-slate-500 font-semibold pt-1">
                           <span>⏱️ {dish.time}</span>
-                          <span>🔥 {dish.calories} cal</span>
                           <span>⭐ {dish.rating} ({dish.reviewCount || 320})</span>
+                        </div>
+
+                        {/* Dedicated In Stock / Out of Stock Toggle Control */}
+                        <div className="flex items-center justify-between rounded-xl bg-slate-100/90 border border-slate-200/80 p-2.5">
+                          <span className="text-[11px] font-extrabold text-slate-700">Stock Availability:</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              toggleItemAvailability(dish.id)
+                              toast.success(`${dish.name} is now ${!isAvailable ? 'Available' : 'Unavailable'}`)
+                            }}
+                            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black transition-all cursor-pointer shadow-xs ${
+                              isAvailable
+                                ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                                : 'bg-rose-500 text-white hover:bg-rose-600'
+                            }`}
+                          >
+                            <span className={`size-2 rounded-full ${isAvailable ? 'bg-white animate-pulse' : 'bg-white'}`} />
+                            <span>{isAvailable ? 'Item Available' : 'Item Unavailable'}</span>
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -822,22 +848,27 @@ export function AdminDashboard() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-600 font-bold mb-1">Calories</label>
+                  <label className="block text-slate-600 font-bold mb-1">Prep Time (e.g. 10 min / 15 min)</label>
                   <input
-                    type="number"
-                    value={dishForm.calories}
-                    onChange={(e) => setDishForm({ ...dishForm, calories: Number(e.target.value) })}
+                    value={dishForm.time}
+                    onChange={(e) => setDishForm({ ...dishForm, time: e.target.value })}
+                    placeholder="15 min"
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-slate-900 focus:border-orange-500 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-600 font-bold mb-1">Prep Time</label>
-                  <input
-                    value={dishForm.time}
-                    onChange={(e) => setDishForm({ ...dishForm, time: e.target.value })}
-                    placeholder="e.g. 15 min"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-slate-900 focus:border-orange-500 focus:outline-none"
-                  />
+                  <label className="block text-slate-600 font-bold mb-1">Stock Availability</label>
+                  <button
+                    type="button"
+                    onClick={() => setDishForm({ ...dishForm, available: !dishForm.available })}
+                    className={`w-full rounded-xl py-2.5 px-3 font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs ${
+                      dishForm.available
+                        ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                        : 'bg-rose-500 text-white hover:bg-rose-600'
+                    }`}
+                  >
+                    <span>{dishForm.available ? '✓ In Stock (Available)' : '✕ Out of Stock (Sold Out)'}</span>
+                  </button>
                 </div>
               </div>
 

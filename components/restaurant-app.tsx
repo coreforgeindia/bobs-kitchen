@@ -1533,10 +1533,14 @@ function FoodCardGrid({ item, index = 0 }: { item: MenuItem; index?: number }) {
 
 /* ==================== FOOD CARD LIST ==================== */
 function FoodCardList({ item, index = 0 }: { item: MenuItem; index?: number }) {
+  const isSoldOut = item.available === false
   return (
-    <motion.article initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3, delay: index * 0.04 }} className="flex items-center justify-between gap-2 rounded-2xl border border-border/80 bg-card p-2.5 sm:p-3.5 shadow-xs font-outfit">
+    <motion.article initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3, delay: index * 0.04 }} className={`flex items-center justify-between gap-2 rounded-2xl border border-border/80 bg-card p-2.5 sm:p-3.5 shadow-xs font-outfit ${isSoldOut ? 'opacity-65' : ''}`}>
       <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1">
-        <img src={item.image} alt={item.name} className="size-14 sm:size-16 md:size-20 rounded-xl object-cover shrink-0 bg-secondary" />
+        <div className="relative shrink-0">
+          <img src={item.image} alt={item.name} className="size-14 sm:size-16 md:size-20 rounded-xl object-cover bg-secondary" />
+          {isSoldOut && <span className="absolute left-1 top-1 rounded bg-rose-600 px-1.5 py-0.5 text-[8px] font-black uppercase text-white shadow-xs">Sold Out</span>}
+        </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             {item.veg ? <span className="size-2 rounded-full bg-emerald-500" /> : item.containsEgg ? <span className="text-amber-500 text-[10px]">▲</span> : <span className="size-2 rounded-full bg-red-500" />}
@@ -1548,7 +1552,11 @@ function FoodCardList({ item, index = 0 }: { item: MenuItem; index?: number }) {
       </div>
       <div className="flex flex-col items-end gap-1 shrink-0">
         <span className="font-outfit font-black text-xs sm:text-base text-foreground">{formatPrice(item.price)}</span>
-        <QuantityStepper item={item} compact />
+        {isSoldOut ? (
+          <span className="rounded-lg bg-secondary px-2.5 py-1 text-xs font-bold text-muted-foreground">Unavailable</span>
+        ) : (
+          <QuantityStepper item={item} compact />
+        )}
       </div>
     </motion.article>
   )
