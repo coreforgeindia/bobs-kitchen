@@ -747,26 +747,31 @@ export function AdminDashboard() {
 
               {/* Top Selling Items */}
               <div className="rounded-3xl border border-slate-200 bg-white p-5 space-y-3 sm:col-span-2 lg:col-span-1 shadow-sm">
-                <h3 className="text-sm font-black text-slate-900">Top 3 Bestselling Dishes</h3>
+                <h3 className="text-sm font-black text-slate-900">Live Bestselling Dishes</h3>
                 <div className="space-y-2.5">
-                  {[
-                    { name: 'Chicken Tikka Snack Pack', sales: '142 orders today', price: '₹99' },
-                    { name: 'Peri Peri French Fries', sales: '118 orders today', price: '₹69' },
-                    { name: 'Chicken Burger', sales: '94 orders today', price: '₹99' },
-                  ].map((top, idx) => (
-                    <div key={idx} className="flex items-center justify-between rounded-2xl bg-slate-50 p-3 border border-slate-200/80">
-                      <div className="flex items-center gap-3">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-orange-500/10 text-orange-600 font-black text-xs">
-                          #{idx + 1}
-                        </span>
-                        <div>
-                          <p className="text-xs font-bold text-slate-900">{top.name}</p>
-                          <p className="text-[10px] text-slate-500">{top.sales}</p>
-                        </div>
-                      </div>
-                      <span className="font-outfit text-xs font-black text-orange-600">{top.price}</span>
+                  {orders.length === 0 ? (
+                    <div className="text-center py-6 text-slate-400 text-xs font-semibold">
+                      <p>No orders recorded yet.</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Live order metrics will populate automatically.</p>
                     </div>
-                  ))}
+                  ) : (
+                    orders.slice(0, 3).map((ord, idx) => (
+                      <div key={idx} className="flex items-center justify-between rounded-2xl bg-slate-50 p-3 border border-slate-200/80">
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-orange-500/10 text-orange-600 font-black text-xs">
+                            #{idx + 1}
+                          </span>
+                          <div>
+                            <p className="text-xs font-bold text-slate-900">
+                              {ord.items?.[0]?.name || 'Gourmet Meal'}
+                            </p>
+                            <p className="text-[10px] text-slate-500 font-mono">Order #{ord.id} · {ord.orderMode || 'Delivery'}</p>
+                          </div>
+                        </div>
+                        <span className="font-outfit text-xs font-black text-orange-600">{formatPrice(ord.total)}</span>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>

@@ -205,17 +205,19 @@ export default function PipraPayDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           
           {/* Logo & Brand */}
-          <div className="flex items-center gap-6">
-            <Link href="/piprapay" className="flex items-center gap-2.5">
-              <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-indigo-500 flex items-center justify-center text-white font-black text-lg shadow-sm">
-                🐜
-              </div>
+          <div className="flex items-center gap-4 sm:gap-6">
+            <Link href="/piprapay" className="flex items-center gap-3">
+              <img
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-8Cr2WCcP9wuThinpGdLL4Uy5dCY9Ri.png"
+                alt="Bob's Satellite Logo"
+                className="size-10 rounded-2xl object-cover ring-2 ring-orange-500/40 shadow-sm"
+              />
               <div className="flex flex-col">
-                <span className="font-extrabold text-lg text-slate-900 tracking-tight leading-none">
-                  Pipra<span className="text-indigo-600">Pay</span>
+                <span className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight leading-none">
+                  BOB&apos;S <span className="text-orange-600">SATELLITE KITCHEN</span>
                 </span>
-                <span className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase mt-0.5">
-                  Payment Automation
+                <span className="text-[10px] text-slate-400 font-bold tracking-wider uppercase mt-0.5">
+                  Automated UPI Payment Engine · PipraPay
                 </span>
               </div>
             </Link>
