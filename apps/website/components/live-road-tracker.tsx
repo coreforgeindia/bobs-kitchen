@@ -5,7 +5,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Navigation, Bike, MapPin, ExternalLink, RefreshCw } from 'lucide-react'
 
-export const KITCHEN_COORDS: [number, number] = [12.953542087360153, 77.69335637484109] // 1067, 8th Main Rd, Kaveri Layout, Marathahalli
+export const KITCHEN_COORDS: [number, number] = [12.95371983601378, 77.6959312938781] // 1067, 8th Main Rd, Kaveri Layout, Marathahalli
 
 interface LiveRoadTrackerProps {
   destLat?: number

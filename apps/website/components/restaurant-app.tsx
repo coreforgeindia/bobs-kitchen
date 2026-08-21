@@ -125,8 +125,8 @@ function orderFromSupabaseRow(row: any): Order {
 type ViewType = 'home' | 'menu' | 'offers' | 'specials' | 'story' | 'reviews' | 'contact' | 'faq' | 'checkout'
 type MenuLayoutMode = 'grid' | 'list'
 
-const KITCHEN_LAT = 12.953542087360153
-const KITCHEN_LNG = 77.69335637484109
+const KITCHEN_LAT = 12.95371983601378
+const KITCHEN_LNG = 77.6959312938781
 
 function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371

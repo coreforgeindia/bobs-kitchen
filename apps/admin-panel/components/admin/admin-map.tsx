@@ -6,7 +6,7 @@ import { MapPin, Navigation, Phone, User, Package, CheckCircle2, Clock, Truck, S
 import { Order, useAppStore } from '@/lib/store'
 import { formatPrice } from '@/lib/menu-data'
 
-const KITCHEN_LOCATION: [number, number] = [12.953542087360153, 77.69335637484109] // 1067, 8th Main Rd, Kaveri Layout, Marathahalli Village, Bengaluru
+const KITCHEN_LOCATION: [number, number] = [12.95371983601378, 77.6959312938781] // 1067, 8th Main Rd, Kaveri Layout, Marathahalli Village, Bengaluru
 
 function createCustomIcon(type: 'kitchen' | 'delivery' | 'delivered', status?: string) {
   const bgColor = type === 'kitchen' ? '#0f766e' : status === 'Delivered' ? '#15803d' : '#ea580c'

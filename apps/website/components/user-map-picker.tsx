@@ -5,7 +5,7 @@ import L from 'leaflet'
 import { Navigation, MapPin, CheckCircle2, AlertTriangle, Sparkles, LocateFixed, Search } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 
-const KITCHEN_LOCATION: [number, number] = [12.953542087360153, 77.69335637484109] // 1067, 8th Main Rd, Kaveri Layout, Marathahalli Village, Bengaluru
+const KITCHEN_LOCATION: [number, number] = [12.95371983601378, 77.6959312938781] // 1067, 8th Main Rd, Kaveri Layout, Marathahalli Village, Bengaluru
 
 function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371
