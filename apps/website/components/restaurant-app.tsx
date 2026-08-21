@@ -331,8 +331,8 @@ function AddressSelectionModal({
           <UserMapPicker
             initialLat={KITCHEN_LAT}
             initialLng={KITCHEN_LNG}
-            onConfirmLocation={(addr, dist) => {
-              onSelectAddress(addr, dist, lat, lng)
+            onConfirmLocation={(addr, dist, pinnedLat, pinnedLng) => {
+              onSelectAddress(addr, dist, pinnedLat, pinnedLng)
               toast.success(`Pinned location confirmed: ${dist} km from Kitchen 📍`)
               onClose()
             }}

@@ -287,34 +287,48 @@ BEGIN
 END $$;
 
 -- =========================================================================
--- 9. INITIAL MENU ITEMS SEED DATA
 -- =========================================================================
-INSERT INTO menu_items (id, name, category, price, description, veg, rating, review_count, calories, prep_time, bestseller, available, special_offer_badge) VALUES
-('paneer-tikka-snack-pack', 'Veg Snack Pack', 'Fusion Snack Pack', 120.00, 'Crispy cottage cheese paneer tikka cubes served with signature dipping sauce & golden fries.', true, 4.8, 482, 480, '15 min', true, true, 'OUR SIGNATURE'),
-('chicken-tikka-snack-pack', 'Chicken Snack Pack', 'Fusion Snack Pack', 120.00, 'Smoky grilled chicken tikka bites, seasoned crispy fries, and house spicy mayo dip.', false, 4.9, 654, 590, '15 min', true, true, 'OUR SIGNATURE'),
-('chicken-jalfrezi-snack-pack', 'Chicken Jalfrezi Snack Pack', 'Fusion Snack Pack', 130.00, 'Spiced chicken jalfrezi tossed with crunchy bell peppers, crispy potato wedges, and mint dip.', false, 4.8, 390, 610, '15 min', true, true, 'CHEF SPECIAL'),
-('crunchy-paneer-roll', 'Crunchy Paneer Roll', 'Rolls', 110.00, 'Crispy seasoned paneer cubes, crunchy fresh slaw, and smoky house sauce rolled in a warm paratha wrap.', true, 4.7, 345, 390, '10 min', true, true, NULL),
-('tawa-grilled-chicken-roll', 'Tawa Grilled Chicken Roll', 'Rolls', 110.00, 'Tawa-seared tender chicken strips, sauteed onions, and herbs rolled with a creamy tangy sauce.', false, 4.8, 420, 440, '10 min', true, true, NULL),
-('chicken-jalfrezi-roll', 'Chicken Jalfrezi Roll', 'Rolls', 110.00, 'Spiced jalfrezi chicken, sweet peppers, and red onions rolled in a hot grilled wrap.', false, 4.7, 290, 450, '10 min', false, true, NULL),
-('veg-burger', 'Veg Burger', 'Burgers', 89.00, 'Crispy spiced golden vegetable patty topped with fresh lettuce, juicy tomato, and signature secret burger sauce.', true, 4.8, 780, 380, '10 min', true, true, NULL),
-('chicken-burger', 'Chicken Burger', 'Burgers', 99.00, 'Juicy flame-grilled chicken patty, creamy herb mayo, melted cheese slice, and crisp lettuce on toasted bun.', false, 4.9, 1040, 460, '10 min', true, true, NULL),
-('peri-peri-french-fries', 'Peri Peri French Fries', 'Fries & Sides', 69.00, 'Crispy golden potato fries tossed in our signature bold, smoky 12-spice African peri peri dust.', true, 4.9, 1350, 290, '10 min', true, true, NULL),
-('plain-french-fries', 'Plain French Fries', 'Fries & Sides', 59.00, 'Classic golden salted fries cooked extra crisp and served hot.', true, 4.6, 480, 260, '10 min', false, true, NULL),
-('veg-nuggets', 'Veg Nuggets', 'Fries & Sides', 59.00, 'Crispy golden vegetable bites packed with potatoes and corn, served with tomato dip.', true, 4.6, 260, 280, '10 min', false, true, NULL),
-('peri-peri-veg-nuggets', 'Peri Peri Veg Nuggets', 'Fries & Sides', 69.00, 'Crunchy golden veg nuggets dusted with spicy and tangy peri peri spice mix.', true, 4.7, 230, 290, '10 min', false, true, NULL),
-('chicken-nuggets', 'Chicken Nuggets', 'Fries & Sides', 79.00, 'Tender chicken bites encased in a crispy breadcrumb coating with house mayo.', false, 4.8, 490, 340, '10 min', true, true, NULL),
-('peri-peri-chicken-nuggets', 'Peri Peri Chicken Nuggets', 'Fries & Sides', 89.00, 'Crispy chicken nuggets coated in fiery African peri-peri spices.', false, 4.9, 310, 360, '10 min', false, true, NULL),
-('potato-smilies', 'Potato Smilies', 'Fries & Sides', 59.00, 'Fun, crispy potato faces with a fluffy mashed interior and crisp crust.', true, 4.7, 210, 270, '10 min', false, true, NULL),
-('peri-peri-potato-smilies', 'Peri Peri Potato Smilies', 'Fries & Sides', 69.00, 'Classic potato smilies spiced with hot & zesty peri peri dust.', true, 4.8, 190, 280, '10 min', false, true, NULL),
-('paneer-tikka-sandwich', 'Paneer Tikka Sandwich', 'Sandwiches', 99.00, 'Grilled sandwich filled with marinated cottage cheese, crunchy capsicum, and melted cheese.', true, 4.8, 510, 420, '10 min', true, true, NULL),
-('cheese-sandwich', 'Cheese Sandwich', 'Sandwiches', 89.00, 'Double layered toasted sandwich with melted mozzarella, cheddar, and Italian seasoning.', true, 4.7, 430, 390, '10 min', false, true, NULL),
-('chicken-tikka-sandwich', 'Chicken Tikka Sandwich', 'Sandwiches', 110.00, 'Spiced grilled chicken, mint sauce, and melted cheese toasted between sourdough slices.', false, 4.9, 620, 480, '10 min', true, true, NULL)
+-- 9. INITIAL MENU ITEMS SEED DATA (All 7 Categories + Image Links)
+-- =========================================================================
+INSERT INTO menu_items (id, name, category, price, description, image, veg, contains_egg, rating, review_count, calories, prep_time, bestseller, available, special_offer_badge) VALUES
+('paneer-tikka-snack-pack', 'Veg Snack Pack', 'Fusion Snack Pack', 120.00, 'Crispy cottage cheese paneer tikka cubes served with signature dipping sauce & golden fries.', '/veg-snack-pack.jpg', true, false, 4.8, 482, 480, '15 min', true, true, 'OUR SIGNATURE'),
+('chicken-tikka-snack-pack', 'Chicken Snack Pack', 'Fusion Snack Pack', 120.00, 'Smoky grilled chicken tikka bites, seasoned crispy fries, and house spicy mayo dip.', '/chicken-snack-pack.jpg', false, false, 4.9, 654, 590, '15 min', true, true, 'OUR SIGNATURE'),
+('chicken-jalfrezi-snack-pack', 'Chicken Jalfrezi Snack Pack', 'Fusion Snack Pack', 130.00, 'Spiced chicken jalfrezi tossed with crunchy bell peppers, crispy potato wedges, and mint dip.', '/chicken-jalfrezi-snack-pack.png', false, false, 4.8, 390, 610, '15 min', true, true, 'CHEF SPECIAL'),
+('crunchy-paneer-roll', 'Crunchy Paneer Roll', 'Rolls', 110.00, 'Crispy seasoned paneer cubes, crunchy fresh slaw, and smoky house sauce rolled in a warm paratha wrap.', '/crunchy_paneer_wrap.png', true, false, 4.7, 345, 390, '10 min', true, true, NULL),
+('tawa-grilled-chicken-roll', 'Tawa Grilled Chicken Roll', 'Rolls', 110.00, 'Tawa-seared tender chicken strips, sauteed onions, and herbs rolled with a creamy tangy sauce.', '/tawa_grilled_chicken_wrap.png', false, false, 4.8, 420, 440, '10 min', true, true, NULL),
+('chicken-jalfrezi-roll', 'Chicken Jalfrezi Roll', 'Rolls', 110.00, 'Spiced jalfrezi chicken, sweet peppers, and red onions rolled in a hot grilled wrap.', '/chicken_jalfrezi_wrap.png', false, false, 4.7, 290, 450, '10 min', true, true, NULL),
+('veg-burger', 'Veg Burger', 'Burgers', 89.00, 'Crispy spiced golden vegetable patty topped with fresh lettuce, juicy tomato, and signature secret burger sauce.', '/veg_burger.png', true, false, 4.8, 780, 380, '10 min', true, true, NULL),
+('chicken-burger', 'Chicken Burger', 'Burgers', 99.00, 'Juicy flame-grilled chicken patty, creamy herb mayo, melted cheese slice, and crisp lettuce on toasted bun.', '/chicken_burger.png', false, false, 4.9, 1040, 460, '10 min', true, true, NULL),
+('peri-peri-french-fries', 'Peri Peri French Fries', 'Fries & Sides', 69.00, 'Crispy golden potato fries tossed in our signature bold, smoky 12-spice African peri peri dust.', '/peri_peri_fries.png', true, false, 4.9, 1350, 290, '10 min', true, true, NULL),
+('plain-french-fries', 'Plain French Fries', 'Fries & Sides', 59.00, 'Classic golden salted fries cooked extra crisp and served hot.', 'https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?auto=format&fit=crop&w=800&q=80', true, false, 4.6, 480, 260, '10 min', false, true, NULL),
+('veg-nuggets', 'Veg Nuggets', 'Fries & Sides', 59.00, 'Crispy golden vegetable bites packed with potatoes and corn, served with tomato dip.', 'https://images.unsplash.com/photo-1562967916-eb82221dfb92?auto=format&fit=crop&w=800&q=80', true, false, 4.6, 260, 280, '10 min', false, true, NULL),
+('peri-peri-veg-nuggets', 'Peri Peri Veg Nuggets', 'Fries & Sides', 69.00, 'Crunchy golden veg nuggets dusted with spicy and tangy peri peri spice mix.', 'https://images.unsplash.com/photo-1562967916-eb82221dfb92?auto=format&fit=crop&w=800&q=80', true, false, 4.7, 230, 290, '10 min', false, true, NULL),
+('chicken-nuggets', 'Chicken Nuggets', 'Fries & Sides', 79.00, 'Tender chicken bites encased in a crispy breadcrumb coating with house mayo.', 'https://images.unsplash.com/photo-1562967916-eb82221dfb92?auto=format&fit=crop&w=800&q=80', false, false, 4.8, 490, 340, '10 min', true, true, NULL),
+('peri-peri-chicken-nuggets', 'Peri Peri Chicken Nuggets', 'Fries & Sides', 89.00, 'Crispy chicken nuggets coated in fiery African peri-peri spices.', 'https://images.unsplash.com/photo-1562967916-eb82221dfb92?auto=format&fit=crop&w=800&q=80', false, false, 4.9, 310, 360, '10 min', false, true, NULL),
+('potato-smilies', 'Potato Smilies', 'Fries & Sides', 59.00, 'Fun, crispy potato faces with a fluffy mashed interior and crisp crust.', 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80', true, false, 4.7, 210, 270, '10 min', false, true, NULL),
+('peri-peri-potato-smilies', 'Peri Peri Potato Smilies', 'Fries & Sides', 69.00, 'Classic potato smilies spiced with hot & zesty peri peri dust.', 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80', true, false, 4.8, 190, 280, '10 min', false, true, NULL),
+('paneer-tikka-sandwich', 'Paneer Tikka Sandwich', 'Sandwiches', 99.00, 'Grilled sandwich filled with marinated cottage cheese, crunchy capsicum, and melted cheese.', '/paneer_tikka_sandwich.png', true, false, 4.8, 510, 420, '10 min', true, true, NULL),
+('cheese-sandwich', 'Cheese Sandwich', 'Sandwiches', 89.00, 'Double layered toasted sandwich with melted mozzarella, cheddar, and Italian seasoning.', '/cheese_sandwich.png', true, false, 4.7, 430, 390, '10 min', false, true, NULL),
+('chicken-tikka-sandwich', 'Chicken Tikka Sandwich', 'Sandwiches', 110.00, 'Spiced grilled chicken, mint sauce, and melted cheese toasted between sourdough slices.', '/chicken_tikka_sandwich.png', false, false, 4.9, 620, 480, '10 min', true, true, NULL),
+('chicken-jalfrezi-sandwich', 'Chicken Jalfrezi Sandwich', 'Sandwiches', 80.00, 'Tangy and spiced chicken jalfrezi tossed with peppers in a crispy grilled sandwich.', '/chicken_jalfrezi_sandwich.png', false, false, 4.7, 380, 420, '10 min', false, true, NULL),
+('tiramisu-cup', 'Tiramisu Cup', 'Desserts', 150.00, 'Silky mascarpone cream layered with espresso-soaked ladyfingers and dusted with rich Dutch cocoa.', 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=800&q=80', false, true, 4.9, 610, 310, '5 min', true, true, NULL),
+('brownie-with-ice-cream', 'Brownie with Ice Cream', 'Desserts', 120.00, 'Warm, gooey chocolate fudge brownie topped with a chilled scoop of vanilla ice cream and chocolate drizzle.', 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=800&q=80', false, true, 4.9, 780, 420, '5 min', true, true, NULL),
+('water-500ml', 'Water Bottle – 500 ml', 'Beverages', 10.00, 'Pure packaged mineral water 500 ml chilled.', 'https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&w=800&q=80', true, false, 4.5, 150, 0, '1 min', false, true, NULL),
+('water-1l', 'Water Bottle – 1 L', 'Beverages', 20.00, 'Pure packaged mineral water 1 Litre chilled.', 'https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&w=800&q=80', true, false, 4.5, 220, 0, '1 min', false, true, NULL),
+('thums-up', 'Thums Up', 'Beverages', 20.00, 'Charged ice-cold Thums Up can/bottle (250ml).', 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=800&q=80', true, false, 4.8, 920, 120, '1 min', false, true, NULL),
+('sprite', 'Sprite', 'Beverages', 20.00, 'Crisp refreshing lemon-lime Sprite soda.', 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?auto=format&fit=crop&w=800&q=80', true, false, 4.7, 490, 110, '1 min', false, true, NULL),
+('mirinda', 'Mirinda', 'Beverages', 20.00, 'Sweet fizzy orange fruit flavored soda.', 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?auto=format&fit=crop&w=800&q=80', true, false, 4.6, 310, 130, '1 min', false, true, NULL),
+('coca-cola', 'Coca-Cola', 'Beverages', 20.00, 'Classic ice-cold fizzy Coca-Cola.', 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=800&q=80', true, false, 4.8, 880, 120, '1 min', false, true, NULL),
+('pepsi', 'Pepsi', 'Beverages', 20.00, 'Chilled bold Pepsi cola refreshment.', 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80', true, false, 4.7, 430, 120, '1 min', false, true, NULL),
+('fanta', 'Fanta', 'Beverages', 20.00, 'Tangy sparkling orange drink.', 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?auto=format&fit=crop&w=800&q=80', true, false, 4.6, 290, 120, '1 min', false, true, NULL)
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
   category = EXCLUDED.category,
   price = EXCLUDED.price,
   description = EXCLUDED.description,
+  image = EXCLUDED.image,
   veg = EXCLUDED.veg,
+  contains_egg = EXCLUDED.contains_egg,
   rating = EXCLUDED.rating,
   review_count = EXCLUDED.review_count,
   calories = EXCLUDED.calories,
@@ -322,4 +336,12 @@ ON CONFLICT (id) DO UPDATE SET
   bestseller = EXCLUDED.bestseller,
   available = EXCLUDED.available,
   special_offer_badge = EXCLUDED.special_offer_badge;
+
+-- =========================================================================
+-- 10. PRODUCTION CLEANUP SCRIPT (Clear all test orders & reset order sequence to #BSK001)
+-- =========================================================================
+TRUNCATE TABLE orders CASCADE;
+TRUNCATE TABLE pp_sms_data CASCADE;
+ALTER SEQUENCE order_number_seq RESTART WITH 1;
+
 
