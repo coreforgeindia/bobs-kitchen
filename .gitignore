@@ -17,3 +17,5 @@ out/
 .dev.vars
 .DS_Store
 PipraPay/
+.turbo/
+*.tar.zst
