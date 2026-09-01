@@ -2642,107 +2642,108 @@ function Checkout({
     }
 
     // 4. Configure Razorpay modal parameters
-    const options: any = {
-      key: razorpayKey,
-      amount: Math.round(total * 100),
-      currency: 'INR',
-      name: "Bob's Satellite Kitchen",
-      description: `Order #${orderIdToSave} Payment`,
-      ...(razorpayOrderId ? { order_id: razorpayOrderId } : {}),
-      prefill: {
-        name: finalName,
-        contact: finalPhone,
-        email: finalEmail || undefined,
-      },
-      theme: {
-        color: '#F97316',
-      },
-      config: {
-        display: {
-          hide: [
-            { method: 'emi' },
-            { method: 'paylater' },
-          ],
-          preferences: {
-            show_default_blocks: true,
+    try {
+      const options: any = {
+        key: razorpayKey,
+        amount: Math.round(total * 100),
+        currency: 'INR',
+        name: "Bob's Satellite Kitchen",
+        description: `Order #${orderIdToSave} Payment`,
+        ...(razorpayOrderId ? { order_id: razorpayOrderId } : {}),
+        prefill: {
+          name: finalName,
+          contact: finalPhone,
+          email: finalEmail || undefined,
+        },
+        theme: {
+          color: '#F97316',
+        },
+        config: {
+          display: {
+            hide: [
+              { method: 'emi' },
+              { method: 'paylater' },
+            ],
+            preferences: {
+              show_default_blocks: true,
+            },
           },
         },
-      },
-      handler: async function (response: any) {
-        toast.loading('Verifying payment with Razorpay...', { id: 'razorpay-verify' })
-        
-        let isVerified = false
-        try {
-          // 5. Verify payment signature on server if API is available
-          const verifyRes = await fetch('/api/razorpay/verify-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id || razorpayOrderId || `direct_${Date.now()}`,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature || '',
-            }),
-          })
+        handler: async function (response: any) {
+          toast.loading('Verifying payment with Razorpay...', { id: 'razorpay-verify' })
+          
+          let isVerified = false
+          try {
+            // 5. Verify payment signature on server if API is available
+            const verifyRes = await fetch('/api/razorpay/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id || razorpayOrderId || `direct_${Date.now()}`,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature || '',
+              }),
+            })
 
-          if (verifyRes.ok) {
-            const verifyData = await verifyRes.json()
-            if (verifyData.success) {
-              isVerified = true
+            if (verifyRes.ok) {
+              const verifyData = await verifyRes.json()
+              if (verifyData.success) {
+                isVerified = true
+              }
             }
+          } catch (vErr) {
+            console.warn('Razorpay verification API unavailable, proceeding with payment ID:', vErr)
           }
-        } catch (vErr) {
-          console.warn('Razorpay verification API unavailable, proceeding with payment ID:', vErr)
-        }
 
-        // Accept payment if verified OR valid razorpay_payment_id received from Razorpay
-        if (isVerified || response.razorpay_payment_id) {
-          toast.dismiss('razorpay-verify')
+          // Accept payment if verified OR valid razorpay_payment_id received from Razorpay
+          if (isVerified || response.razorpay_payment_id) {
+            toast.dismiss('razorpay-verify')
 
-          // 6. Save order to app state store
-          const id = placeOrder({
-            orderId: orderIdToSave,
-            mode: orderMode,
-            deliveryAddress: targetAddress,
-            tableNo: selectedTable,
-            customerName: finalName,
-            customerPhone: finalPhone,
-            customerEmail: finalEmail,
-            paymentMethod: 'Razorpay Online',
-            transactionId: response.razorpay_payment_id,
-            discount,
-            appliedCoupon: coupon,
-            coinsEarned: earnedCoins,
-            distanceKm: estimatedDist,
-          })
+            // 6. Save order to app state store
+            const id = placeOrder({
+              orderId: orderIdToSave,
+              mode: orderMode,
+              deliveryAddress: targetAddress,
+              tableNo: selectedTable,
+              customerName: finalName,
+              customerPhone: finalPhone,
+              customerEmail: finalEmail,
+              paymentMethod: 'Razorpay Online',
+              transactionId: response.razorpay_payment_id,
+              discount,
+              appliedCoupon: coupon,
+              coinsEarned: earnedCoins,
+              distanceKm: estimatedDist,
+            })
 
-          // 7. Sync order to Supabase table for staff dashboard
-          await supabase.from('orders').upsert({
-            order_id: orderIdToSave,
-            amount: total,
-            status: 'PAID',
-            customer_name: finalName,
-            customer_phone: finalPhone,
-            customer_email: finalEmail,
-            delivery_address: targetAddress,
-            order_mode: orderMode,
-            lat: deliveryCoordinates.lat,
-            lng: deliveryCoordinates.lng,
-            items: cart.map(i => ({ id: i.id, name: i.name, qty: i.quantity, price: i.price, veg: i.veg ?? true })),
-            upi_transaction_id: response.razorpay_payment_id,
-            expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          }, { onConflict: 'order_id' })
+            // 7. Sync order to Supabase table for staff dashboard
+            await supabase.from('orders').upsert({
+              order_id: orderIdToSave,
+              amount: total,
+              status: 'PAID',
+              customer_name: finalName,
+              customer_phone: finalPhone,
+              customer_email: finalEmail,
+              delivery_address: targetAddress,
+              order_mode: orderMode,
+              lat: deliveryCoordinates.lat,
+              lng: deliveryCoordinates.lng,
+              items: cart.map(i => ({ id: i.id, name: i.name, qty: i.quantity, price: i.price, veg: i.veg ?? true })),
+              upi_transaction_id: response.razorpay_payment_id,
+              expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            }, { onConflict: 'order_id' })
 
-          setPlacedId(id)
-          setPlacedTotal(total)
-          setUpiTransactionId(response.razorpay_payment_id)
-          setIsCompleted(true)
-          toast.success(`Order #${id} Paid & Confirmed! 🎉`)
-        } else {
-          toast.dismiss('razorpay-verify')
-          toast.error('Payment verification failed. Please contact support.')
-        }
-        setIsPlacingOrder(false)
-      },
+            setPlacedId(id)
+            setPlacedTotal(total)
+            setUpiTransactionId(response.razorpay_payment_id)
+            setIsCompleted(true)
+            toast.success(`Order #${id} Paid & Confirmed! 🎉`)
+          } else {
+            toast.dismiss('razorpay-verify')
+            toast.error('Payment verification failed. Please contact support.')
+          }
+          setIsPlacingOrder(false)
+        },
         modal: {
           ondismiss: function () {
             setIsPlacingOrder(false)
