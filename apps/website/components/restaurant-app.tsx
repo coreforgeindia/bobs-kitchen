@@ -2636,7 +2636,7 @@ function Checkout({
 
       // 4. Configure Razorpay modal parameters
       const options = {
-        key: data.key_id || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        key: data.key_id || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_live_TW0Z5IqPhStlJE',
         amount: data.order.amount,
         currency: data.order.currency,
         name: "Bob's Satellite Kitchen",
