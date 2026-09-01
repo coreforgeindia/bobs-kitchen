@@ -1,9 +1,20 @@
-export async function onRequestPost(context: { request: Request; env: Record<string, string> }) {
+export async function onRequest(context: { request: Request; env: Record<string, string> }) {
   const headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': '*',
+  }
+
+  if (context.request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers })
+  }
+
+  if (context.request.method !== 'POST') {
+    return new Response(
+      JSON.stringify({ success: false, message: 'Method Not Allowed. Use POST.' }),
+      { status: 405, headers }
+    )
   }
 
   try {
