@@ -18,6 +18,7 @@ import {
 import { supabase, generateUpiUri, generateAppUpiUris, reserveOrderId, PAYMENT_TIMEOUT_SECONDS, PAYMENT_POLL_INTERVAL_MS, UPI_CONFIG } from '@/lib/supabase'
 import QRCode from 'qrcode'
 import { cartCount, useAppStore, type Order, type OrderMode } from '@/lib/store'
+import { loadRazorpayScript } from '@/lib/load-razorpay'
 import dynamic from 'next/dynamic'
 
 const UserMapPicker = dynamic(() => import('./user-map-picker').then((m) => m.UserMapPicker), {
@@ -509,13 +510,13 @@ function FormattedHeader({
 }
 
 /* ==================== FLOATING CART WIDGET ==================== */
-function FloatingCartWidget({ onOpen }: { onOpen: () => void }) {
+function FloatingCartWidget({ onOpen, activeView }: { onOpen: () => void; activeView: ViewType }) {
   const cart = useAppStore((s) => s.cart)
   const count = cartCount(cart)
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const freeDeliveryDiff = Math.max(0, 300 - total)
 
-  if (count === 0) return null
+  if (count === 0 || activeView === 'checkout') return null
 
   return (
     <AnimatePresence>
@@ -2575,6 +2576,179 @@ function Checkout({
     return `${m}:${s.toString().padStart(2, '0')}`
   }
 
+  const handleRazorpayCheckout = async () => {
+    if (cart.length === 0) return toast.error('Your basket is empty!')
+
+    // Validate phone number
+    const finalPhone = (user?.phone || guestPhone.trim()).replace(/\D/g, '').slice(-10)
+    if (!finalPhone || finalPhone.length < 10) {
+      return toast.error('Please enter a valid 10-digit Phone Number!')
+    }
+
+    const finalName = user?.name || guestName.trim()
+    const finalEmail = user?.email || guestEmail.trim()
+    if (!finalName) return toast.error('Please enter your full name!')
+
+    setIsPlacingOrder(true)
+
+    // 1. Ensure Razorpay client script is loaded
+    const isLoaded = await loadRazorpayScript()
+    if (!isLoaded) {
+      setIsPlacingOrder(false)
+      return toast.error('Razorpay SDK failed to load. Please check your internet connection.')
+    }
+
+    // 2. Reserve next order code (BSK001, BSK002...)
+    let orderIdToSave = qrOrderId
+    if (!orderIdToSave) {
+      orderIdToSave = await reserveOrderId()
+      setQrOrderId(orderIdToSave)
+    }
+
+    // 3. Call backend API route to create Razorpay Order
+    try {
+      const res = await fetch('/api/razorpay/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: total,
+          receipt: orderIdToSave,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!data.success || !data.order) {
+        setIsPlacingOrder(false)
+        return toast.error(data.message || 'Could not initiate Razorpay payment.')
+      }
+
+      const targetAddress = (orderMode as string) === 'Dining in' 
+        ? selectedTable 
+        : orderMode === 'Takeaway' 
+        ? 'Takeaway Pickup (Kaveri Layout Outlet, Marathahalli)' 
+        : activeAddr
+
+      // Auto-save guest user details locally
+      if (!user && saveAccount && finalPhone) {
+        login(finalName, finalEmail, finalPhone, activeAddr)
+      }
+
+      // 4. Configure Razorpay modal parameters
+      const options = {
+        key: data.key_id || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: data.order.amount,
+        currency: data.order.currency,
+        name: "Bob's Satellite Kitchen",
+        description: `Order #${orderIdToSave} Payment`,
+        order_id: data.order.id,
+        prefill: {
+          name: finalName,
+          contact: finalPhone,
+          email: finalEmail || undefined,
+        },
+        theme: {
+          color: '#F97316',
+        },
+        config: {
+          display: {
+            hide: [
+              { method: 'emi' },
+              { method: 'paylater' },
+            ],
+            preferences: {
+              show_default_blocks: true,
+            },
+          },
+        },
+        handler: async function (response: any) {
+          toast.loading('Verifying payment with Razorpay...', { id: 'razorpay-verify' })
+          
+          try {
+            // 5. Verify payment signature on server
+            const verifyRes = await fetch('/api/razorpay/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            })
+
+            const verifyData = await verifyRes.json()
+
+            if (verifyData.success) {
+              toast.dismiss('razorpay-verify')
+
+              // 6. Save order to app state store
+              const id = placeOrder({
+                orderId: orderIdToSave,
+                mode: orderMode,
+                deliveryAddress: targetAddress,
+                tableNo: selectedTable,
+                customerName: finalName,
+                customerPhone: finalPhone,
+                customerEmail: finalEmail,
+                paymentMethod: 'Razorpay Online',
+                transactionId: response.razorpay_payment_id,
+                discount,
+                appliedCoupon: coupon,
+                coinsEarned: earnedCoins,
+                distanceKm: estimatedDist,
+              })
+
+              // 7. Sync order to Supabase table for staff dashboard
+              await supabase.from('orders').upsert({
+                order_id: orderIdToSave,
+                amount: total,
+                status: 'PAID',
+                customer_name: finalName,
+                customer_phone: finalPhone,
+                customer_email: finalEmail,
+                delivery_address: targetAddress,
+                order_mode: orderMode,
+                lat: deliveryCoordinates.lat,
+                lng: deliveryCoordinates.lng,
+                items: cart.map(i => ({ id: i.id, name: i.name, qty: i.quantity, price: i.price, veg: i.veg ?? true })),
+                upi_transaction_id: response.razorpay_payment_id,
+                expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+              }, { onConflict: 'order_id' })
+
+              setPlacedId(id)
+              setPlacedTotal(total)
+              setUpiTransactionId(response.razorpay_payment_id)
+              setIsCompleted(true)
+              toast.success(`Order #${id} Paid & Confirmed! 🎉`)
+            } else {
+              toast.dismiss('razorpay-verify')
+              toast.error('Payment verification failed. Please contact support.')
+            }
+          } catch (vErr) {
+            console.error('Razorpay verification error:', vErr)
+            toast.dismiss('razorpay-verify')
+            toast.error('Error verifying payment.')
+          } finally {
+            setIsPlacingOrder(false)
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setIsPlacingOrder(false)
+            toast.error('Payment popup closed.')
+          },
+        },
+      }
+
+      const rzp = new (window as any).Razorpay(options)
+      rzp.open()
+    } catch (err: any) {
+      console.error('Razorpay checkout error:', err)
+      toast.error('Could not launch Razorpay checkout.')
+      setIsPlacingOrder(false)
+    }
+  }
+
   const handleConfirmOrder = async (overrideOrderId?: string, overrideTxnId?: string) => {
     if (cart.length === 0) return toast.error('Your basket is empty!')
 
@@ -3024,159 +3198,70 @@ function Checkout({
               )}
             </div>
 
-            {/* STEP 3: PAYMENT METHOD */}
+            {/* STEP 3: PAYMENT METHOD (RAZORPAY GATEWAY) */}
             <div className={`rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm space-y-4 font-outfit transition-all ${checkoutStep !== 3 ? 'opacity-85' : 'ring-2 ring-orange-500'}`}>
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white font-black text-xs font-outfit">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-600 text-white font-black text-xs font-outfit">
                   <span className="font-outfit text-sm">3</span>
                 </div>
                 <div>
-                  <h3 className="font-outfit text-base sm:text-lg font-black text-slate-900">Payment Option</h3>
-                  <p className="text-xs text-slate-500">Choose between dynamic UPI QR or Direct App Link</p>
+                  <h3 className="font-outfit text-base sm:text-lg font-black text-slate-900">Payment Gateway</h3>
+                  <p className="text-xs text-slate-500">Pay securely via Razorpay (UPI, GPay, Cards, NetBanking)</p>
                 </div>
               </div>
 
               {checkoutStep === 3 && (
                 <div className="space-y-4 animate-in fade-in duration-200 font-outfit">
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('qr')}
-                      className={`flex flex-col items-center justify-center gap-1 rounded-xl p-3 border transition-all cursor-pointer ${
-                        paymentMethod === 'qr'
-                          ? 'border-orange-500 bg-orange-500/5 shadow-xs font-black'
-                          : 'border-slate-200 bg-white hover:bg-slate-50 font-bold'
-                      }`}
-                    >
-                      <span className="text-xl">📱</span>
-                      <span className="text-[11px] text-slate-900">Dynamic QR Code</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('intent')}
-                      className={`flex flex-col items-center justify-center gap-1 rounded-xl p-3 border transition-all cursor-pointer ${
-                        paymentMethod === 'intent'
-                          ? 'border-orange-500 bg-orange-500/5 shadow-xs font-black'
-                          : 'border-slate-200 bg-white hover:bg-slate-50 font-bold'
-                      }`}
-                    >
-                      <span className="text-xl">⚡</span>
-                      <span className="text-[11px] text-slate-900">Direct UPI Link</span>
-                    </button>
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-black text-slate-900 uppercase text-[10px] tracking-wider font-outfit">Accepted Payment Methods</span>
+                      <span className="text-emerald-600 font-bold text-[11px] flex items-center gap-1">
+                        <ShieldCheck size={14} /> 256-bit Secure
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-slate-700 font-bold text-[11px]">
+                      <div className="flex items-center gap-2 rounded-xl bg-white p-2.5 border border-slate-200 shadow-2xs">
+                        <span className="text-base">⚡</span>
+                        <span>UPI / GPay / PhonePe / Paytm</span>
+                      </div>
+                      <div className="flex items-center gap-2 rounded-xl bg-white p-2.5 border border-slate-200 shadow-2xs">
+                        <span className="text-base">💳</span>
+                        <span>Debit & Credit Cards</span>
+                      </div>
+                      <div className="flex items-center gap-2 rounded-xl bg-white p-2.5 border border-slate-200 shadow-2xs">
+                        <span className="text-base">🏦</span>
+                        <span>NetBanking (50+ Banks)</span>
+                      </div>
+                      <div className="flex items-center gap-2 rounded-xl bg-white p-2.5 border border-slate-200 shadow-2xs">
+                        <span className="text-base">👛</span>
+                        <span>Mobile Wallets</span>
+                      </div>
+                    </div>
                   </div>
 
-                  {paymentMethod === 'qr' && (
-                    <div className="flex flex-col items-center justify-center bg-white border border-orange-200/80 rounded-2xl p-6 shadow-sm space-y-4 animate-in fade-in">
-                      <span className="rounded-full bg-orange-500/10 text-orange-600 border border-orange-500/30 px-3 py-1 text-[9px] font-black uppercase tracking-wider">
-                        Scan to Pay via GPay / PhonePe / Paytm
-                      </span>
-                      
-                      <div className="relative size-52 bg-white p-3 rounded-2xl shadow-md border-4 border-orange-500 flex items-center justify-center overflow-hidden">
-                        {qrDataUrl ? (
-                          <>
-                            <img 
-                              src={qrDataUrl} 
-                              alt="UPI QR Code" 
-                              className="size-full object-contain"
-                            />
-                            {paymentStatus === 'paid' && (
-                              <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center text-center p-3 z-10">
-                                <span className="text-emerald-500 text-3xl font-black">✓</span>
-                                <p className="text-xs font-bold text-emerald-800 mt-1">Paid Successfully</p>
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <div className="animate-pulse flex flex-col items-center justify-center text-slate-300 gap-1">
-                            <span className="text-3xl animate-bounce">⚡</span>
-                            <span className="font-bold text-[10px] uppercase">Generating QR...</span>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="text-center space-y-1">
-                        <p className="text-xs text-slate-500 font-bold">Payable Amount:</p>
-                        <p className="text-2xl font-black text-orange-600">{formatPrice(total)}</p>
-                        <p className="text-[10px] text-slate-400 font-mono font-bold">Order Ref: {qrOrderId || 'Generating...'}</p>
-                      </div>
+                  <div className="rounded-2xl border border-orange-200 bg-orange-50/60 p-4 flex items-center justify-between">
+                    <div>
+                      <p className="text-[11px] font-bold text-slate-500">Total Payable Amount:</p>
+                      <p className="text-2xl font-black text-orange-600 font-outfit">{formatPrice(total)}</p>
                     </div>
-                  )}
+                    <span className="rounded-full bg-orange-500/10 text-orange-700 border border-orange-500/30 px-3 py-1 text-[10px] font-black uppercase">
+                      Instant Confirmation
+                    </span>
+                  </div>
 
-                  {paymentMethod === 'intent' && (
-                    <div className="flex flex-col items-center justify-center bg-white border border-orange-200/80 rounded-2xl p-5 shadow-sm space-y-4 text-center animate-in fade-in w-full">
-                      <span className="rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 px-3 py-1 text-[9px] font-black uppercase tracking-wider">
-                        Pay directly using your UPI apps
-                      </span>
-                      
-                      <div className="space-y-1.5 text-center">
-                        <p className="text-[11px] text-slate-500 font-bold">Payable Amount:</p>
-                        <p className="text-2xl font-black text-orange-600">{formatPrice(total)}</p>
-                      </div>
-
-                      {upiLinks ? (
-                        <div className="w-full grid grid-cols-2 gap-2 text-xs font-outfit">
-                          <a 
-                            href={upiLinks.gpay}
-                            onClick={() => {
-                              setTimeout(() => {
-                                alert("If Google Pay didn't open, try the generic 'Pay via UPI' button instead.");
-                              }, 2500);
-                            }}
-                            className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 p-3 font-bold text-slate-800 shadow-2xs cursor-pointer transition-all"
-                          >
-                            🔵 Google Pay
-                          </a>
-                          <a 
-                            href={upiLinks.phonepe}
-                            onClick={() => {
-                              setTimeout(() => {
-                                alert("If PhonePe didn't open, try the generic 'Pay via UPI' button instead.");
-                              }, 2500);
-                            }}
-                            className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 p-3 font-bold text-slate-800 shadow-2xs cursor-pointer transition-all"
-                          >
-                            🟣 PhonePe
-                          </a>
-                          <a 
-                            href={upiLinks.paytm}
-                            onClick={() => {
-                              setTimeout(() => {
-                                alert("If Paytm didn't open, try the generic 'Pay via UPI' button instead.");
-                              }, 2500);
-                            }}
-                            className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 p-3 font-bold text-slate-800 shadow-2xs cursor-pointer transition-all"
-                          >
-                            🔴 Paytm
-                          </a>
-                          <a 
-                            href={upiLinks.generic}
-                            className="flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800 p-3 font-black shadow-sm cursor-pointer transition-all"
-                          >
-                            ⚡ Pay via UPI
-                          </a>
-                        </div>
-                      ) : (
-                        <p className="text-xs text-slate-400 animate-pulse uppercase font-black">Initializing links...</p>
-                      )}
-
-                      <div className="text-[9px] text-slate-400 font-bold">
-                        Note: Deep links work best on Android devices with installed apps.
-                      </div>
-                    </div>
-                  )}
-
-                  {/* PLACE ORDER SUBMIT BUTTON */}
+                  {/* PLACE ORDER & PAY VIA RAZORPAY BUTTON */}
                   <button
-                    onClick={() => handleConfirmOrder()}
+                    onClick={() => handleRazorpayCheckout()}
                     disabled={cart.length === 0 || isPlacingOrder}
-                    className="w-full rounded-2xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 py-4 text-sm font-black text-white shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="w-full rounded-2xl bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 py-4 text-sm font-black text-white shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 font-outfit"
                   >
                     {isPlacingOrder ? (
-                      <span className="animate-spin text-sm">⌛</span>
-                    ) : paymentStatus === 'paid' ? (
-                      '✅ PAYMENT VERIFIED — CONFIRM ORDER'
+                      <span className="flex items-center gap-2">
+                        <RefreshCw className="animate-spin" size={16} /> Opening Razorpay Gateway...
+                      </span>
                     ) : (
-                      `PLACE ORDER & PAY ${formatPrice(total)} →`
+                      `PAY ${formatPrice(total)} & PLACE ORDER VIA RAZORPAY →`
                     )}
                   </button>
                 </div>
@@ -3589,7 +3674,7 @@ export function RestaurantApp({ onAccount }: { onAccount?: () => void }) {
       </footer>
 
       {/* FLOATING CART BUTTON */}
-      <FloatingCartWidget onOpen={() => handleSetView('checkout')} />
+      <FloatingCartWidget onOpen={() => handleSetView('checkout')} activeView={view} />
 
       {/* STICKY LIVE TRACKING BOTTOM BAR */}
       <LiveTrackingBottomBar onOpenTracking={handleOpenTracking} />
